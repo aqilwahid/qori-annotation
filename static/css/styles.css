@@ -1,0 +1,56 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.container-fluid {
+    flex: 1;
+}
+
+footer {
+    background-color: #f8f9fa;
+    text-align: center;
+    padding: 10px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+#time {
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+#waveform {
+    margin-top: 20px;
+}
+
+#controls {
+    margin-top: 20px;
+}
+
+.btn {
+    margin-right: 10px;
+}
+
+.waveform-cursor {
+    transition: left 0.1s ease-in-out;
+}
+
+.hidden {
+    display: none;
+}
+
+#annotationTable, #annotationTableTajwid {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.delete-icon {
+    cursor: pointer;
+    color: red;
+}

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Singularity Data Annotation Tool</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <script src="https://unpkg.com/wavesurfer.js"></script>
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" width="90" height="50" class="d-inline-block align-mid" alt="">
+            Makhraj & Tajwid Annotation Tool
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button id="completeMakhrajBtn" class="btn btn-success text-white" onclick="completeMakhraj()">Complete Annotation Makhraj</button>
+                    <script>
+                        function completeMakhraj() {
+                            const table = document.getElementById('annotationTableBody');
+                            const rows = table.getElementsByTagName('tr');
+                            const annotations = [];
+                        
+                            // Dapatkan nama file audio yang diupload
+                            const audioFile = document.getElementById('audioFile').files[0].name;
+                            const fileName = `annotation_makhraj_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
+                        
+                            for (let i = 0; i < rows.length; i++) {
+                                const cells = rows[i].getElementsByTagName('td');
+                                const annotation = {
+                                    audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
+                                    letter: cells[0].textContent,
+                                    makhraj: {
+                                        primary: cells[1].textContent,
+                                        secondary: cells[2].textContent,
+                                        details: cells[3].textContent
+                                    },
+                                    start_time: parseFloat(cells[4].textContent),
+                                    end_time: parseFloat(cells[5].textContent),
+                                    metadata: {
+                                        qori: "abdulsamad",
+                                        recitation_style: "Hafs",
+                                        recording_environment: cells[6].textContent,
+                                        recording_quality: cells[7].textContent
+                                    }
+                                };
+                                annotations.push(annotation);
+                            }
+                        
+                            const json = JSON.stringify(annotations, null, 2);
+                            downloadJSON(json, fileName);
+                        }                                  
+                        function completeTajwid() {
+                            const table = document.getElementById('annotationTableBodyTajwid');
+                            const rows = table.getElementsByTagName('tr');
+                            const annotations = [];
+                        
+                            // Dapatkan nama file audio yang diupload
+                            const audioFile = document.getElementById('audioFile').files[0].name;
+                            const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
+                        
+                            for (let i = 0; i < rows.length; i++) {
+                                const cells = rows[i].getElementsByTagName('td');
+                                const annotation = {
+                                    rule: cells[0].textContent,
+                                    sub_rule: cells[1].textContent,
+                                    sub_sub_rule: cells[2].textContent,
+                                    start_time: parseFloat(cells[3].textContent),
+                                    end_time: parseFloat(cells[4].textContent),
+                                    context: cells[5].textContent
+                                };
+                                annotations.push(annotation);
+                            }
+                        
+                            const json = JSON.stringify(annotations, null, 2);
+                            downloadJSON(json, fileName);
+                        }                          
+                        function downloadJSON(json, fileName) {
+                            const blob = new Blob([json], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = fileName; // Nama file diatur sesuai dengan input
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }                        
+                    </script>
+                </li>
+                <li class="nav-item">
+                    <button id="completeTajwidBtn" class="btn btn-info text-white" onclick="completeTajwid()">Complete Annotation Tajwid</button>
+                </li>                
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Upload Sidebar -->
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Upload Audio</h5>
+                        <form id="upload-form">
+                            <div class="form-group">
+                                <label for="audioFile">Choose Audio File</label>
+                                <input type="file" class="form-control-file" id="audioFile" accept="audio/*">
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="uploadAudio()">Upload</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Annotation Table for Makhraj -->
+                <div id="annotationList">
+                    <h6>Saved Annotations (Makhraj)</h6>
+                    <table id="annotationTable" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Letter</th>
+                                <th>Primary Makhraj</th>
+                                <th>Secondary Makhraj</th>
+                                <th>Details</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Environment</th>
+                                <th>Quality</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annotationTableBody">
+                            <!-- Makhraj Annotations will be appended here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Annotation Table for Tajwid -->
+                <div id="annotationListTajwid">
+                    <h6>Saved Annotations (Tajwid)</h6>
+                    <table id="annotationTableTajwid" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Rule</th>
+                                <th>Sub Rule</th>
+                                <th>Sub Sub Rule</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Context</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annotationTableBodyTajwid">
+                            <!-- Tajwid Annotations will be appended here -->
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Main Content -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Audio Player</h5>
+
+                        <!-- Waveform -->
+                        <div id="waveform"></div>
+
+                        <!-- Controls -->
+                        <div id="controls" class="d-flex justify-content-start">
+                            <button id="playPause" class="btn btn-primary">Play/Pause</button>
+                            <button id="stop" class="btn btn-danger">Stop</button>
+                        </div>
+
+                        <!-- Time Stamp -->
+                        <div id="time">0:00.000</div>
+
+                        <!-- Dropdown Selection -->
+                        <div class="form-group">
+                            <label for="annotationType">Choose Annotation Type</label>
+                            <select class="form-control" id="annotationType" onchange="showAnnotationFields()">
+                                <option value="">Select Annotation Type</option>
+                                <option value="makhraj">Anotasi Makhraj</option>
+                                <option value="tajwid">Anotasi Tajwid</option>
+                            </select>
+                        </div>
+
+                        <!-- Makhraj Annotation Fields -->
+                        <div id="makhrajFields" class="hidden">
+                            <div class="form-group">
+                                <label for="makhrajLetter">Letter</label>
+                                <select class="form-control" id="makhrajLetter" onchange="updateFieldsBasedOnLetter()">
+                                    <option value="ﺍ">ﺍ</option>
+                                    <option value="ب">ب</option>
+                                    <option value="ت">ت</option>
+                                    <option value="ث">ث</option>
+                                    <option value="ج">ج</option>
+                                    <option value="ح">ح</option>
+                                    <option value="خ">خ</option>
+                                    <option value="د">د</option>
+                                    <option value="ذ">ذ</option>
+                                    <option value="ر">ر</option>
+                                    <option value="ز">ز</option>
+                                    <option value="س">س</option>
+                                    <option value="ش">ش</option>
+                                    <option value="ص">ص</option>
+                                    <option value="ض">ض</option>
+                                    <option value="ط">ط</option>
+                                    <option value="ظ">ظ</option>
+                                    <option value="ع">ع</option>
+                                    <option value="غ">غ</option>
+                                    <option value="ف">ف</option>
+                                    <option value="ق">ق</option>
+                                    <option value="ك">ك</option>
+                                    <option value="ل">ل</option>
+                                    <option value="م">م</option>
+                                    <option value="ن">ن</option>
+                                    <option value="و">و</option>
+                                    <option value="ه">ه</option>
+                                    <option value="ء">ء</option>
+                                    <option value="ي">ي</option>
+                                </select>
+                                
+                            </div>
+                            <div class="form-group">
+                                <label for="makhrajPrimary">Primary Makhraj</label>
+                                <select class="form-control" id="makhrajPrimary">
+                                    <option value="Halaq">Halaq (Tenggorokan)</option>
+                                    <option value="Lisan">Lisan (Lidah)</option>
+                                    <option value="Shafatan">Shafatan (Bibir)</option>
+                                    <option value="Khaishum">Khaishum (Hidung)</option>
+                                </select>                                
+                            </div>
+                            <div class="form-group">
+                                <label for="makhrajSecondary">Secondary Makhraj</label>
+                                <select class="form-control" id="makhrajSecondary">
+                                    <option value="Bagian dalam tenggorokan">Bagian dalam tenggorokan</option>
+                                    <option value="Tengah lidah">Tengah lidah</option>
+                                    <option value="Ujung lidah">Ujung lidah</option>
+                                    <option value="Bibir atas">Bibir atas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="makhrajDetails">Details</label>
+                                <textarea class="form-control" id="makhrajDetails" readonly></textarea>                               
+                            </div>
+                            <div class="form-group">
+                                <label for="startTime">Start Time (seconds.milliseconds)</label>
+                                <input type="text" class="form-control" id="startTime" placeholder="e.g., 0.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="endTime">End Time (seconds.milliseconds)</label>
+                                <input type="text" class="form-control" id="endTime" placeholder="e.g., 0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="recordingEnvironment">Recording Environment</label>
+                                <select class="form-control" id="recordingEnvironment">
+                                    <option value="studio">Studio</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recordingQuality">Recording Quality</label>
+                                <select class="form-control" id="recordingQuality">
+                                    <option value="high">High</option>
+                                    <option value="mid">Mid</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tajwid Annotation Fields -->
+                        <div id="tajwidFields" class="hidden">
+                            <div class="form-group">
+                                <label for="tajwidRule">Tajwid Rule</label>
+                                <select class="form-control" id="tajwidRule">
+                                    <option value="Mad">Mad</option>
+                                    <option value="Hukum Nun Mati">Hukum Nun Mati</option>
+                                    <option value="Hukum Mim Mati">Hukum Mim Mati</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Sub Rule: Will be dynamically populated based on the selected Tajwid Rule -->
+                            <div class="form-group">
+                                <label for="tajwidSubRule">Sub Rule</label>
+                                <select class="form-control" id="tajwidSubRule">
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            
+                            <!-- Sub Sub Rule: Will be dynamically populated based on the selected Sub Rule -->
+                            <div class="form-group">
+                                <label for="tajwidSubSubRule">Sub Sub Rule</label>
+                                <select class="form-control" id="tajwidSubSubRule">
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tajwidStartTime">Start Time (seconds.milliseconds)</label>
+                                <input type="text" class="form-control" id="tajwidStartTime" placeholder="e.g., 0.0">
+                            </div>
+                            <div class="form-group">
+                                <label for="tajwidEndTime">End Time (seconds.milliseconds)</label>
+                                <input type="text" class="form-control" id="tajwidEndTime" placeholder="e.g., 0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="tajwidContext">Context</label>
+                                <input type="text" class="form-control" id="tajwidContext" placeholder="Enter context (e.g., رَبِّ)">
+                            </div>
+                        </div>
+
+                        <script>
+                            const tajwidRuleSelect = document.getElementById('tajwidRule');
+                            const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
+                            const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
+
+                            const tajwidOptions = {
+                                "Mad": {
+                                    "Mad Thabi'i": ["Mad Thabi'i"],
+                                    "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
+                                },
+                                "Hukum Nun Mati": {
+                                    "Izhar": ["Izhar Halqi"],
+                                    "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
+                                    "Iqlab": ["Iqlab"],
+                                    "Ikhfa": ["Ikhfa Haqiqi"]
+                                },
+                                "Hukum Mim Mati": {
+                                    "Ikhfa Syafawi": ["Ikhfa Syafawi"],
+                                    "Idgham Mitslain": ["Idgham Mitslain"]
+                                }
+                            };
+
+                            tajwidRuleSelect.addEventListener('change', function() {
+                                const selectedRule = tajwidRuleSelect.value;
+                                populateSubRules(selectedRule);
+                                tajwidSubSubRuleSelect.innerHTML = ''; // Clear sub-sub rule options when changing the rule
+                            });
+
+                            tajwidSubRuleSelect.addEventListener('change', function() {
+                                const selectedRule = tajwidRuleSelect.value;
+                                const selectedSubRule = tajwidSubRuleSelect.value;
+                                populateSubSubRules(selectedRule, selectedSubRule);
+                            });
+
+                            function populateSubRules(selectedRule) {
+                                tajwidSubRuleSelect.innerHTML = '';
+                                const subRules = tajwidOptions[selectedRule];
+                                for (let subRule in subRules) {
+                                    let option = document.createElement('option');
+                                    option.value = subRule;
+                                    option.textContent = subRule;
+                                    tajwidSubRuleSelect.appendChild(option);
+                                }
+                            }
+
+                            function populateSubSubRules(selectedRule, selectedSubRule) {
+                                tajwidSubSubRuleSelect.innerHTML = '';
+                                const subSubRules = tajwidOptions[selectedRule][selectedSubRule];
+                                subSubRules.forEach(function(subSubRule) {
+                                    let option = document.createElement('option');
+                                    option.value = subSubRule;
+                                    option.textContent = subSubRule;
+                                    tajwidSubSubRuleSelect.appendChild(option);
+                                });
+                            }
+                        </script>
+
+                        <button type="button" class="btn btn-primary hidden" id="saveAnnotationBtn" onclick="saveAnnotation()">Save Annotation</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center text-lg-start">
+        <div class="text-center p-3">
+            © 2024 Singularity Annotation Tools
+        </div>
+    </footer>
+
+    <script>
+        let wavesurfer = null;
+
+        function updateTimestamp() {
+            const currentTime = wavesurfer.getCurrentTime();
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = Math.floor(currentTime % 60);
+            const milliseconds = Math.floor((currentTime % 1) * 1000);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            document.getElementById('time').textContent = timeString;
+
+            requestAnimationFrame(updateTimestamp);
+        }
+
+        function uploadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                
+                if (wavesurfer) {
+                    wavesurfer.destroy();
+                }
+
+                // Membuat Wavesurfer instance baru
+                wavesurfer = WaveSurfer.create({
+                    container: '#waveform',
+                    waveColor: '#A8DBA8',
+                    progressColor: '#3B8686',
+                    backend: 'WebAudio',
+                    barWidth: 2,
+                    height: 200,
+                    responsive: true,
+                    cursorWidth: 1,
+                    pixelRatio: 1,
+                    minPxPerSec: 100,
+                    cursorColor: '#000',
+                    cursorStyle: 'solid'
+                });
+
+                wavesurfer.load(url);
+
+                // Tombol Play/Pause
+                document.getElementById('playPause').addEventListener('click', function() {
+                    wavesurfer.playPause();
+                });
+
+                // Tombol Stop
+                document.getElementById('stop').addEventListener('click', function() {
+                    wavesurfer.stop();
+                });
+
+                wavesurfer.on('ready', function () {
+                    updateTimestamp();
+
+                    // Tambahkan class ke elemen cursor untuk transisi smooth
+                    const cursor = document.querySelector('.wavesurfer-cursor');
+                    if (cursor) {
+                        cursor.classList.add('waveform-cursor');
+                    }
+                });
+            } else {
+                alert("Please select a file to upload.");
+            }
+        }
+
+        function showAnnotationFields() {
+            const selectedType = document.getElementById('annotationType').value;
+            document.getElementById('makhrajFields').classList.add('hidden');
+            document.getElementById('tajwidFields').classList.add('hidden');
+            document.getElementById('annotationList').classList.add('hidden');
+            document.getElementById('annotationListTajwid').classList.add('hidden');
+            document.getElementById('saveAnnotationBtn').classList.add('hidden');
+        
+            if (selectedType === 'makhraj') {
+                document.getElementById('makhrajFields').classList.remove('hidden');
+                document.getElementById('annotationList').classList.remove('hidden');
+                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
+            } else if (selectedType === 'tajwid') {
+                document.getElementById('tajwidFields').classList.remove('hidden');
+                document.getElementById('annotationListTajwid').classList.remove('hidden');
+                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
+            }
+        }        
+
+        function updateFieldsBasedOnLetter() {
+            const letter = document.getElementById('makhrajLetter').value;
+            let primaryMakhraj = '';
+            let secondaryMakhraj = '';
+            let details = '';
+
+            switch (letter) {
+                case 'ﺍ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Bagian dalam tenggorokan';
+                    details = 'Hamzah (ﺍ), suara keluar dari bagian dalam tenggorokan.';
+                    break;
+                case 'ب':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Ba (ب), suara keluar dari kedua bibir.';
+                    break;
+                case 'ت':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Ta (ت), suara keluar dari ujung lidah dan ujung gigi atas.';
+                    break;
+                case 'ث':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Tha (ث), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ج':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Jim (ج), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                case 'ح':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ha (ح), suara keluar dari tengah tenggorokan.';
+                    break;
+                case 'خ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Ujung tenggorokan';
+                    details = 'Kha (خ), suara keluar dari ujung tenggorokan.';
+                    break;
+                case 'د':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dal (د), suara keluar dari ujung lidah dan ujung gigi atas.';
+                    break;
+                case 'ذ':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dzal (ذ), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ر':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Ra (ر), suara keluar dari ujung lidah dan sedikit menggulung.';
+                    break;
+                case 'ز':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Zay (ز), suara keluar dari ujung lidah dan gigi atas dengan sedikit desiran.';
+                    break;
+                case 'س':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Sin (س), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ش':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Shin (ش), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                case 'ص':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Sad (ص), suara keluar dari ujung lidah dan ujung gigi seri atas dengan desiran.';
+                    break;
+                case 'ض':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Sisi lidah';
+                    details = 'Dhad (ض), suara keluar dari sisi lidah dan gigi seri atas.';
+                    break;
+                case 'ط':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'To (ط), suara keluar dari ujung lidah dan gigi atas dengan tekanan kuat.';
+                    break;
+                case 'ظ':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dho (ظ), suara keluar dari ujung lidah dan ujung gigi seri atas dengan tekanan kuat.';
+                    break;
+                case 'ع':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ain (ع), suara keluar dari tengah tenggorokan.';
+                    break;
+                case 'غ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Ujung tenggorokan';
+                    details = 'Ghain (غ), suara keluar dari ujung tenggorokan dengan getaran.';
+                    break;
+                case 'ف':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir bawah';
+                    details = 'Fa (ف), suara keluar dari bibir bawah dan ujung gigi seri atas.';
+                    break;
+                case 'ق':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Pangkal lidah';
+                    details = 'Qaf (ق), suara keluar dari pangkal lidah dan langit-langit lunak.';
+                    break;
+                case 'ك':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Pangkal lidah';
+                    details = 'Kaf (ك), suara keluar dari pangkal lidah dan langit-langit keras.';
+                    break;
+                case 'ل':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Lam (ل), suara keluar dari ujung lidah dan langit-langit depan.';
+                    break;
+                case 'م':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Mim (م), suara keluar dari kedua bibir dengan rapat sempurna.';
+                    break;
+                case 'ن':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Nun (ن), suara keluar dari ujung lidah dan langit-langit depan dengan getaran halus.';
+                    break;
+                case 'و':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Waw (و), suara keluar dari kedua bibir dengan bulat sempurna.';
+                    break;
+                case 'ه':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ha (ه), suara keluar dari tengah tenggorokan dengan tekanan ringan.';
+                    break;
+                case 'ي':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Ya (ي), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                default:
+                    primaryMakhraj = '';
+                    secondaryMakhraj = '';
+                    details = '';
+            }
+            
+            document.getElementById('makhrajPrimary').value = primaryMakhraj;
+            document.getElementById('makhrajSecondary').value = secondaryMakhraj;
+            document.getElementById('makhrajDetails').value = details;
+        }
+
+        function saveAnnotation() {
+            const annotationType = document.getElementById('annotationType').value;
+        
+            if (annotationType === 'makhraj') {
+                // Proses untuk Anotasi Makhraj
+                const letter = document.getElementById('makhrajLetter').value;
+                const primary = document.getElementById('makhrajPrimary').value;
+                const secondary = document.getElementById('makhrajSecondary').value;
+                const details = document.getElementById('makhrajDetails').value;
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                const recordingEnvironment = document.getElementById('recordingEnvironment').value;
+                const recordingQuality = document.getElementById('recordingQuality').value;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${letter}</td>
+                    <td>${primary}</td>
+                    <td>${secondary}</td>
+                    <td>${details}</td>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td>${recordingEnvironment}</td>
+                    <td>${recordingQuality}</td>
+                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
+                `;
+                document.getElementById('annotationTableBody').appendChild(row);
+            } else if (annotationType === 'tajwid') {
+                // Proses untuk Anotasi Tajwid
+                const rule = document.getElementById('tajwidRule').value;
+                const subRule = document.getElementById('tajwidSubRule').value;
+                const subSubRule = document.getElementById('tajwidSubSubRule').value;
+                const startTime = document.getElementById('tajwidStartTime').value;
+                const endTime = document.getElementById('tajwidEndTime').value;
+                const context = document.getElementById('tajwidContext').value;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rule}</td>
+                    <td>${subRule}</td>
+                    <td>${subSubRule}</td>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td>${context}</td>
+                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
+                `;
+                document.getElementById('annotationTableBodyTajwid').appendChild(row);
+            }
+        }            
+        
+
+        function deleteAnnotation(element) {
+            // Menghapus row dari tabel
+            element.parentElement.parentElement.remove();
+        }
+    </script>
+
+</body>
+</html>
