@@ -1,2 +1,0 @@
-# qori-annotation
-anotation tools
