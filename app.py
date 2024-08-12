@@ -8,5 +8,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-# C:/Users/aqilw/Ide Jualan Creative/Singularity AI/Dataset Quran-Recitation/Annotation_flask/app.py
+    

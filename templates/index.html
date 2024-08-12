@@ -14,7 +14,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="#">
             <img src="{{ url_for('static', filename='img/logo.png') }}" width="90" height="50" class="d-inline-block align-mid" alt="">
-            Makhraj & Tajwid Annotation Tool
+            Makhraj & Tajwid Annotation Tools
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -274,33 +274,30 @@
                             </div>
                         </div>
 
-                        <!-- Tajwid Annotation Fields -->
+                        <!-- Tajwid Annotation Fields -->                      
                         <div id="tajwidFields" class="hidden">
                             <div class="form-group">
                                 <label for="tajwidRule">Tajwid Rule</label>
-                                <select class="form-control" id="tajwidRule">
-                                    <option value="Mad">Mad</option>
+                                <select class="form-control" id="tajwidRule" onchange="updateSubRuleOptions(); updateTajwidContext();">
+                                    <option value="">Select Tajwid Rule</option>
                                     <option value="Hukum Nun Mati">Hukum Nun Mati</option>
                                     <option value="Hukum Mim Mati">Hukum Mim Mati</option>
+                                    <option value="Mad">Mad</option>
+                                    <!-- Tambahkan rule Tajwid lainnya sesuai kebutuhan -->
                                 </select>
                             </div>
-                            
-                            <!-- Sub Rule: Will be dynamically populated based on the selected Tajwid Rule -->
                             <div class="form-group">
                                 <label for="tajwidSubRule">Sub Rule</label>
-                                <select class="form-control" id="tajwidSubRule">
-                                    <!-- Options will be populated by JavaScript -->
+                                <select class="form-control" id="tajwidSubRule" onchange="updateSubSubRuleOptions(); updateTajwidContext();">
+                                    <!-- Sub Rule akan terisi secara dinamis berdasarkan Tajwid Rule yang dipilih -->
                                 </select>
                             </div>
-                            
-                            <!-- Sub Sub Rule: Will be dynamically populated based on the selected Sub Rule -->
                             <div class="form-group">
                                 <label for="tajwidSubSubRule">Sub Sub Rule</label>
-                                <select class="form-control" id="tajwidSubSubRule">
-                                    <!-- Options will be populated by JavaScript -->
+                                <select class="form-control" id="tajwidSubSubRule" onchange="updateTajwidContext();">
+                                    <!-- Sub Sub Rule akan terisi secara dinamis berdasarkan Sub Rule yang dipilih -->
                                 </select>
                             </div>
-
                             <div class="form-group">
                                 <label for="tajwidStartTime">Start Time (seconds.milliseconds)</label>
                                 <input type="text" class="form-control" id="tajwidStartTime" placeholder="e.g., 0.0">
@@ -314,63 +311,105 @@
                                 <input type="text" class="form-control" id="tajwidContext" placeholder="Enter context (e.g., رَبِّ)">
                             </div>
                         </div>
-
+                        
                         <script>
-                            const tajwidRuleSelect = document.getElementById('tajwidRule');
-                            const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
-                            const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
-
-                            const tajwidOptions = {
-                                "Mad": {
-                                    "Mad Thabi'i": ["Mad Thabi'i"],
-                                    "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
-                                },
-                                "Hukum Nun Mati": {
-                                    "Izhar": ["Izhar Halqi"],
-                                    "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
-                                    "Iqlab": ["Iqlab"],
-                                    "Ikhfa": ["Ikhfa Haqiqi"]
-                                },
-                                "Hukum Mim Mati": {
-                                    "Ikhfa Syafawi": ["Ikhfa Syafawi"],
-                                    "Idgham Mitslain": ["Idgham Mitslain"]
-                                }
+                            const subRules = {
+                                "Hukum Nun Mati": ["Idgham", "Iqlab", "Ikhfa", "Izhar"],
+                                "Hukum Mim Mati": ["Idgham Mitslain", "Ikhfa Syafawi", "Izhar Syafawi"],
+                                "Mad": ["Mad Thabi'i", "Mad Wajib Muttasil", "Mad Jaiz Munfasil", "Mad Aridh Lissukun", "Mad Badal"]
                             };
-
-                            tajwidRuleSelect.addEventListener('change', function() {
-                                const selectedRule = tajwidRuleSelect.value;
-                                populateSubRules(selectedRule);
-                                tajwidSubSubRuleSelect.innerHTML = ''; // Clear sub-sub rule options when changing the rule
-                            });
-
-                            tajwidSubRuleSelect.addEventListener('change', function() {
-                                const selectedRule = tajwidRuleSelect.value;
-                                const selectedSubRule = tajwidSubRuleSelect.value;
-                                populateSubSubRules(selectedRule, selectedSubRule);
-                            });
-
-                            function populateSubRules(selectedRule) {
-                                tajwidSubRuleSelect.innerHTML = '';
-                                const subRules = tajwidOptions[selectedRule];
-                                for (let subRule in subRules) {
-                                    let option = document.createElement('option');
-                                    option.value = subRule;
-                                    option.textContent = subRule;
-                                    tajwidSubRuleSelect.appendChild(option);
+                            
+                            const subSubRules = {
+                                "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
+                                "Mad Wajib Muttasil": ["Mad Wajib Muttasil Full"],
+                                "Mad Jaiz Munfasil": ["Mad Jaiz Munfasil Full"],
+                                // Sub-sub-rule lainnya bisa ditambahkan di sini jika diperlukan
+                            };
+                            
+                            function updateSubRuleOptions() {
+                                const rule = document.getElementById('tajwidRule').value;
+                                const subRuleSelect = document.getElementById('tajwidSubRule');
+                                subRuleSelect.innerHTML = ''; // Menghapus opsi sebelumnya
+                            
+                                if (subRules[rule]) {
+                                    subRules[rule].forEach(function (subRule) {
+                                        const option = document.createElement('option');
+                                        option.value = subRule;
+                                        option.textContent = subRule;
+                                        subRuleSelect.appendChild(option);
+                                    });
                                 }
+                            
+                                updateSubSubRuleOptions(); // Memperbarui sub-sub-rule setelah memperbarui sub-rule
                             }
-
-                            function populateSubSubRules(selectedRule, selectedSubRule) {
-                                tajwidSubSubRuleSelect.innerHTML = '';
-                                const subSubRules = tajwidOptions[selectedRule][selectedSubRule];
-                                subSubRules.forEach(function(subSubRule) {
-                                    let option = document.createElement('option');
-                                    option.value = subSubRule;
-                                    option.textContent = subSubRule;
-                                    tajwidSubSubRuleSelect.appendChild(option);
-                                });
+                            
+                            function updateSubSubRuleOptions() {
+                                const subRule = document.getElementById('tajwidSubRule').value;
+                                const subSubRuleSelect = document.getElementById('tajwidSubSubRule');
+                                subSubRuleSelect.innerHTML = ''; // Menghapus opsi sebelumnya
+                            
+                                if (subSubRules[subRule]) {
+                                    subSubRules[subRule].forEach(function (subSubRule) {
+                                        const option = document.createElement('option');
+                                        option.value = subSubRule;
+                                        option.textContent = subSubRule;
+                                        subSubRuleSelect.appendChild(option);
+                                    });
+                                } else {
+                                    // Jika tidak ada sub-sub-rule, isi dengan opsi kosong
+                                    const option = document.createElement('option');
+                                    option.value = 'Null';
+                                    option.textContent = 'Null';
+                                    subSubRuleSelect.appendChild(option);
+                                }
+                            }                            
+                        
+                            function updateTajwidContext() {
+                                const rule = document.getElementById('tajwidRule').value;
+                                const subRule = document.getElementById('tajwidSubRule').value;
+                                const subSubRule = document.getElementById('tajwidSubSubRule').value;
+                                let context = '';
+                        
+                                if (rule === 'Hukum Nun Mati') {
+                                    if (subRule === 'Idgham') {
+                                        if (subSubRule === 'Idgham Bighunnah') {
+                                            context = 'مَن يُؤْمِن'; // Contoh context Idgham Bighunnah
+                                        } else if (subSubRule === 'Idgham Bilaghunnah') {
+                                            context = 'مَنْ لَمْ'; // Contoh context Idgham Bilaghunnah
+                                        }
+                                    } else if (subRule === 'Iqlab') {
+                                        context = 'مَن بَعَثَنَا'; // Contoh context Iqlab
+                                    } else if (subRule === 'Ikhfa') {
+                                        context = 'عَنْهُمْ'; // Contoh context Ikhfa
+                                    } else if (subRule === 'Izhar') {
+                                        context = 'مِنْ عِلْمٍ'; // Contoh context Izhar
+                                    }
+                                } else if (rule === 'Hukum Mim Mati') {
+                                    if (subRule === 'Idgham Mitslain') {
+                                        context = 'أَنتُمْ مُّ'; // Contoh context Idgham Mitslain
+                                    } else if (subRule === 'Ikhfa Syafawi') {
+                                        context = 'لَهُمْ بِهِ'; // Contoh context Ikhfa Syafawi
+                                    } else if (subRule === 'Izhar Syafawi') {
+                                        context = 'مَنْ هُوَ'; // Contoh context Izhar Syafawi
+                                    }
+                                } else if (rule === 'Mad') {
+                                    if (subRule === 'Mad Thabi\'i') {
+                                        context = 'مَا'; // Contoh context Mad Thabi'i
+                                    } else if (subRule === 'Mad Wajib Muttasil') {
+                                        context = 'جَاءَ'; // Contoh context Mad Wajib Muttasil
+                                    } else if (subRule === 'Mad Jaiz Munfasil') {
+                                        context = 'فِي أَمْرِهِ'; // Contoh context Mad Jaiz Munfasil
+                                    } else if (subRule === 'Mad Aridh Lissukun') {
+                                        context = 'بِرَبِّهِمْ'; // Contoh context Mad Aridh Lissukun
+                                    } else if (subRule === 'Mad Badal') {
+                                        context = 'ءَامَنُوا'; // Contoh context Mad Badal
+                                    }
+                                }
+                        
+                                document.getElementById('tajwidContext').value = context;
                             }
-                        </script>
+                        </script>                        
+                        
 
                         <button type="button" class="btn btn-primary hidden" id="saveAnnotationBtn" onclick="saveAnnotation()">Save Annotation</button>
                     </div>
