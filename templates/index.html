@@ -7,7 +7,6 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <script src="https://unpkg.com/wavesurfer.js"></script>
-    <script src="https://unpkg.com/wavesurfer.js/dist/plugin/wavesurfer.regions.min.js"></script>
     <link rel="stylesheet" href="../static/css/styles.css">
 </head>
 <body>
@@ -427,7 +426,7 @@
     </footer>
 
     <script>
-        let wavesurfer;
+        let wavesurfer = null;
 
         function updateTimestamp() {
             const currentTime = wavesurfer.getCurrentTime();
@@ -451,27 +450,7 @@
                 }
 
                 // Membuat Wavesurfer instance baru
-                console.log(WaveSurfer.regions); // Pastikan tidak undefined
-
                 wavesurfer = WaveSurfer.create({
-                    container: '#waveform',
-                    waveColor: '#A8DBA8',
-                    progressColor: '#3B8686',
-                    backend: 'WebAudio',
-                    barWidth: 2,
-                    height: 200,
-                    responsive: true,
-                    cursorWidth: 1,
-                    pixelRatio: 1,
-                    minPxPerSec: 100,
-                    cursorColor: '#000',
-                    cursorStyle: 'solid',
-                    plugins: [
-                        WaveSurfer.regions.create() // Inisialisasi plugin regions
-                    ]
-                });
-
-                const wavesurfer = WaveSurfer.create({
                     container: '#waveform',
                     waveColor: '#A8DBA8',
                     progressColor: '#3B8686',
@@ -485,10 +464,28 @@
                     cursorColor: '#000',
                     cursorStyle: 'solid'
                 });
-                
-                // Inisialisasi plugin regions
-                wavesurfer.registerPlugin(WaveSurfer.regions.create());
-                
+
+                wavesurfer.load(url);
+
+                // Tombol Play/Pause
+                document.getElementById('playPause').addEventListener('click', function() {
+                    wavesurfer.playPause();
+                });
+
+                // Tombol Stop
+                document.getElementById('stop').addEventListener('click', function() {
+                    wavesurfer.stop();
+                });
+
+                wavesurfer.on('ready', function () {
+                    updateTimestamp();
+
+                    // Tambahkan class ke elemen cursor untuk transisi smooth
+                    const cursor = document.querySelector('.wavesurfer-cursor');
+                    if (cursor) {
+                        cursor.classList.add('waveform-cursor');
+                    }
+                });
             } else {
                 alert("Please select a file to upload.");
             }
