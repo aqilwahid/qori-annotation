@@ -6,15 +6,13 @@
     <title>Singularity Data Annotation Tool</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
-    <script src="https://unpkg.com/wavesurfer.js"></script>
     <link rel="stylesheet" href="../static/css/styles.css">
 </head>
 <body>
-
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="#">
             <img src="{{ url_for('static', filename='img/logo.png') }}" width="90" height="50" class="d-inline-block align-mid" alt="">
-            Makhraj & Tajwid Annotation Tools
+            Makhraj & Tajwid Annotation Tool
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -67,7 +65,7 @@
                             const audioFile = document.getElementById('audioFile').files[0].name;
                             const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
                         
-                            for (let i = 0; i < rows.length; i++) {
+                            for (let i = 0; i <script rows.length; i++) {
                                 const cells = rows[i].getElementsByTagName('td');
                                 const annotation = {
                                     rule: cells[0].textContent,
@@ -113,7 +111,7 @@
                                 <label for="audioFile">Choose Audio File</label>
                                 <input type="file" class="form-control-file" id="audioFile" accept="audio/*">
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="uploadAudio()">Upload</button>
+                            <button type="button" class="btn btn-primary" onclick="uploadButton()">Upload</button>
                         </form>
                     </div>
                 </div>
@@ -170,6 +168,7 @@
 
                         <!-- Waveform -->
                         <div id="waveform"></div>
+                        <script type="module" src="../static/js/wavesurfer.js"></script>
 
                         <!-- Controls -->
                         <div id="controls" class="d-flex justify-content-start">
@@ -274,30 +273,33 @@
                             </div>
                         </div>
 
-                        <!-- Tajwid Annotation Fields -->                      
+                        <!-- Tajwid Annotation Fields -->
                         <div id="tajwidFields" class="hidden">
                             <div class="form-group">
                                 <label for="tajwidRule">Tajwid Rule</label>
-                                <select class="form-control" id="tajwidRule" onchange="updateSubRuleOptions(); updateTajwidContext();">
-                                    <option value="">Select Tajwid Rule</option>
+                                <select class="form-control" id="tajwidRule">
+                                    <option value="Mad">Mad</option>
                                     <option value="Hukum Nun Mati">Hukum Nun Mati</option>
                                     <option value="Hukum Mim Mati">Hukum Mim Mati</option>
-                                    <option value="Mad">Mad</option>
-                                    <!-- Tambahkan rule Tajwid lainnya sesuai kebutuhan -->
                                 </select>
                             </div>
+                            
+                            <!-- Sub Rule: Will be dynamically populated based on the selected Tajwid Rule -->
                             <div class="form-group">
                                 <label for="tajwidSubRule">Sub Rule</label>
-                                <select class="form-control" id="tajwidSubRule" onchange="updateSubSubRuleOptions(); updateTajwidContext();">
-                                    <!-- Sub Rule akan terisi secara dinamis berdasarkan Tajwid Rule yang dipilih -->
+                                <select class="form-control" id="tajwidSubRule">
+                                    <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>
+                            
+                            <!-- Sub Sub Rule: Will be dynamically populated based on the selected Sub Rule -->
                             <div class="form-group">
                                 <label for="tajwidSubSubRule">Sub Sub Rule</label>
-                                <select class="form-control" id="tajwidSubSubRule" onchange="updateTajwidContext();">
-                                    <!-- Sub Sub Rule akan terisi secara dinamis berdasarkan Sub Rule yang dipilih -->
+                                <select class="form-control" id="tajwidSubSubRule">
+                                    <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>
+
                             <div class="form-group">
                                 <label for="tajwidStartTime">Start Time (seconds.milliseconds)</label>
                                 <input type="text" class="form-control" id="tajwidStartTime" placeholder="e.g., 0.0">
@@ -311,105 +313,63 @@
                                 <input type="text" class="form-control" id="tajwidContext" placeholder="Enter context (e.g., رَبِّ)">
                             </div>
                         </div>
-                        
+
                         <script>
-                            const subRules = {
-                                "Hukum Nun Mati": ["Idgham", "Iqlab", "Ikhfa", "Izhar"],
-                                "Hukum Mim Mati": ["Idgham Mitslain", "Ikhfa Syafawi", "Izhar Syafawi"],
-                                "Mad": ["Mad Thabi'i", "Mad Wajib Muttasil", "Mad Jaiz Munfasil", "Mad Aridh Lissukun", "Mad Badal"]
+                            const tajwidRuleSelect = document.getElementById('tajwidRule');
+                            const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
+                            const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
+
+                            const tajwidOptions = {
+                                "Mad": {
+                                    "Mad Thabi'i": ["Mad Thabi'i"],
+                                    "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
+                                },
+                                "Hukum Nun Mati": {
+                                    "Izhar": ["Izhar Halqi"],
+                                    "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
+                                    "Iqlab": ["Iqlab"],
+                                    "Ikhfa": ["Ikhfa Haqiqi"]
+                                },
+                                "Hukum Mim Mati": {
+                                    "Ikhfa Syafawi": ["Ikhfa Syafawi"],
+                                    "Idgham Mitslain": ["Idgham Mitslain"]
+                                }
                             };
-                            
-                            const subSubRules = {
-                                "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
-                                "Mad Wajib Muttasil": ["Mad Wajib Muttasil Full"],
-                                "Mad Jaiz Munfasil": ["Mad Jaiz Munfasil Full"],
-                                // Sub-sub-rule lainnya bisa ditambahkan di sini jika diperlukan
-                            };
-                            
-                            function updateSubRuleOptions() {
-                                const rule = document.getElementById('tajwidRule').value;
-                                const subRuleSelect = document.getElementById('tajwidSubRule');
-                                subRuleSelect.innerHTML = ''; // Menghapus opsi sebelumnya
-                            
-                                if (subRules[rule]) {
-                                    subRules[rule].forEach(function (subRule) {
-                                        const option = document.createElement('option');
-                                        option.value = subRule;
-                                        option.textContent = subRule;
-                                        subRuleSelect.appendChild(option);
-                                    });
+
+                            tajwidRuleSelect.addEventListener('change', function() {
+                                const selectedRule = tajwidRuleSelect.value;
+                                populateSubRules(selectedRule);
+                                tajwidSubSubRuleSelect.innerHTML = ''; // Clear sub-sub rule options when changing the rule
+                            });
+
+                            tajwidSubRuleSelect.addEventListener('change', function() {
+                                const selectedRule = tajwidRuleSelect.value;
+                                const selectedSubRule = tajwidSubRuleSelect.value;
+                                populateSubSubRules(selectedRule, selectedSubRule);
+                            });
+
+                            function populateSubRules(selectedRule) {
+                                tajwidSubRuleSelect.innerHTML = '';
+                                const subRules = tajwidOptions[selectedRule];
+                                for (let subRule in subRules) {
+                                    let option = document.createElement('option');
+                                    option.value = subRule;
+                                    option.textContent = subRule;
+                                    tajwidSubRuleSelect.appendChild(option);
                                 }
-                            
-                                updateSubSubRuleOptions(); // Memperbarui sub-sub-rule setelah memperbarui sub-rule
                             }
-                            
-                            function updateSubSubRuleOptions() {
-                                const subRule = document.getElementById('tajwidSubRule').value;
-                                const subSubRuleSelect = document.getElementById('tajwidSubSubRule');
-                                subSubRuleSelect.innerHTML = ''; // Menghapus opsi sebelumnya
-                            
-                                if (subSubRules[subRule]) {
-                                    subSubRules[subRule].forEach(function (subSubRule) {
-                                        const option = document.createElement('option');
-                                        option.value = subSubRule;
-                                        option.textContent = subSubRule;
-                                        subSubRuleSelect.appendChild(option);
-                                    });
-                                } else {
-                                    // Jika tidak ada sub-sub-rule, isi dengan opsi kosong
-                                    const option = document.createElement('option');
-                                    option.value = 'Null';
-                                    option.textContent = 'Null';
-                                    subSubRuleSelect.appendChild(option);
-                                }
-                            }                            
-                        
-                            function updateTajwidContext() {
-                                const rule = document.getElementById('tajwidRule').value;
-                                const subRule = document.getElementById('tajwidSubRule').value;
-                                const subSubRule = document.getElementById('tajwidSubSubRule').value;
-                                let context = '';
-                        
-                                if (rule === 'Hukum Nun Mati') {
-                                    if (subRule === 'Idgham') {
-                                        if (subSubRule === 'Idgham Bighunnah') {
-                                            context = 'مَن يُؤْمِن'; // Contoh context Idgham Bighunnah
-                                        } else if (subSubRule === 'Idgham Bilaghunnah') {
-                                            context = 'مَنْ لَمْ'; // Contoh context Idgham Bilaghunnah
-                                        }
-                                    } else if (subRule === 'Iqlab') {
-                                        context = 'مَن بَعَثَنَا'; // Contoh context Iqlab
-                                    } else if (subRule === 'Ikhfa') {
-                                        context = 'عَنْهُمْ'; // Contoh context Ikhfa
-                                    } else if (subRule === 'Izhar') {
-                                        context = 'مِنْ عِلْمٍ'; // Contoh context Izhar
-                                    }
-                                } else if (rule === 'Hukum Mim Mati') {
-                                    if (subRule === 'Idgham Mitslain') {
-                                        context = 'أَنتُمْ مُّ'; // Contoh context Idgham Mitslain
-                                    } else if (subRule === 'Ikhfa Syafawi') {
-                                        context = 'لَهُمْ بِهِ'; // Contoh context Ikhfa Syafawi
-                                    } else if (subRule === 'Izhar Syafawi') {
-                                        context = 'مَنْ هُوَ'; // Contoh context Izhar Syafawi
-                                    }
-                                } else if (rule === 'Mad') {
-                                    if (subRule === 'Mad Thabi\'i') {
-                                        context = 'مَا'; // Contoh context Mad Thabi'i
-                                    } else if (subRule === 'Mad Wajib Muttasil') {
-                                        context = 'جَاءَ'; // Contoh context Mad Wajib Muttasil
-                                    } else if (subRule === 'Mad Jaiz Munfasil') {
-                                        context = 'فِي أَمْرِهِ'; // Contoh context Mad Jaiz Munfasil
-                                    } else if (subRule === 'Mad Aridh Lissukun') {
-                                        context = 'بِرَبِّهِمْ'; // Contoh context Mad Aridh Lissukun
-                                    } else if (subRule === 'Mad Badal') {
-                                        context = 'ءَامَنُوا'; // Contoh context Mad Badal
-                                    }
-                                }
-                        
-                                document.getElementById('tajwidContext').value = context;
+
+                            function populateSubSubRules(selectedRule, selectedSubRule) {
+                                tajwidSubSubRuleSelect.innerHTML = '';
+                                const subSubRules = tajwidOptions[selectedRule][selectedSubRule];
+                                subSubRules.forEach(function(subSubRule) {
+                                    let option = document.createElement('option');
+                                    option.value = subSubRule;
+                                    option.textContent = subSubRule;
+                                    tajwidSubSubRuleSelect.appendChild(option);
+                                });
                             }
-                        </script>                        
-                        
+                        </script>
 
                         <button type="button" class="btn btn-primary hidden" id="saveAnnotationBtn" onclick="saveAnnotation()">Save Annotation</button>
                     </div>
@@ -425,304 +385,10 @@
         </div>
     </footer>
 
-    <script>
-        let wavesurfer = null;
-
-        function updateTimestamp() {
-            const currentTime = wavesurfer.getCurrentTime();
-            const minutes = Math.floor(currentTime / 60);
-            const seconds = Math.floor(currentTime % 60);
-            const milliseconds = Math.floor((currentTime % 1) * 1000);
-            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
-            document.getElementById('time').textContent = timeString;
-
-            requestAnimationFrame(updateTimestamp);
-        }
-
-        function uploadAudio() {
-            const fileInput = document.getElementById('audioFile');
-            const file = fileInput.files[0];
-            if (file) {
-                const url = URL.createObjectURL(file);
-                
-                if (wavesurfer) {
-                    wavesurfer.destroy();
-                }
-
-                // Membuat Wavesurfer instance baru
-                wavesurfer = WaveSurfer.create({
-                    container: '#waveform',
-                    waveColor: '#A8DBA8',
-                    progressColor: '#3B8686',
-                    backend: 'WebAudio',
-                    barWidth: 2,
-                    height: 200,
-                    responsive: true,
-                    cursorWidth: 1,
-                    pixelRatio: 1,
-                    minPxPerSec: 100,
-                    cursorColor: '#000',
-                    cursorStyle: 'solid'
-                });
-
-                wavesurfer.load(url);
-
-                // Tombol Play/Pause
-                document.getElementById('playPause').addEventListener('click', function() {
-                    wavesurfer.playPause();
-                });
-
-                // Tombol Stop
-                document.getElementById('stop').addEventListener('click', function() {
-                    wavesurfer.stop();
-                });
-
-                wavesurfer.on('ready', function () {
-                    updateTimestamp();
-
-                    // Tambahkan class ke elemen cursor untuk transisi smooth
-                    const cursor = document.querySelector('.wavesurfer-cursor');
-                    if (cursor) {
-                        cursor.classList.add('waveform-cursor');
-                    }
-                });
-            } else {
-                alert("Please select a file to upload.");
-            }
-        }
-
-        function showAnnotationFields() {
-            const selectedType = document.getElementById('annotationType').value;
-            document.getElementById('makhrajFields').classList.add('hidden');
-            document.getElementById('tajwidFields').classList.add('hidden');
-            document.getElementById('annotationList').classList.add('hidden');
-            document.getElementById('annotationListTajwid').classList.add('hidden');
-            document.getElementById('saveAnnotationBtn').classList.add('hidden');
+    <script type="module">
+        import { uploadAudio } from '../static/js/wavesurfer.js';
         
-            if (selectedType === 'makhraj') {
-                document.getElementById('makhrajFields').classList.remove('hidden');
-                document.getElementById('annotationList').classList.remove('hidden');
-                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
-            } else if (selectedType === 'tajwid') {
-                document.getElementById('tajwidFields').classList.remove('hidden');
-                document.getElementById('annotationListTajwid').classList.remove('hidden');
-                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
-            }
-        }        
-
-        function updateFieldsBasedOnLetter() {
-            const letter = document.getElementById('makhrajLetter').value;
-            let primaryMakhraj = '';
-            let secondaryMakhraj = '';
-            let details = '';
-
-            switch (letter) {
-                case 'ﺍ':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Bagian dalam tenggorokan';
-                    details = 'Hamzah (ﺍ), suara keluar dari bagian dalam tenggorokan.';
-                    break;
-                case 'ب':
-                    primaryMakhraj = 'Shafatan';
-                    secondaryMakhraj = 'Bibir atas';
-                    details = 'Ba (ب), suara keluar dari kedua bibir.';
-                    break;
-                case 'ت':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Ta (ت), suara keluar dari ujung lidah dan ujung gigi atas.';
-                    break;
-                case 'ث':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Tha (ث), suara keluar dari ujung lidah dan ujung gigi seri atas.';
-                    break;
-                case 'ج':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Tengah lidah';
-                    details = 'Jim (ج), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
-                    break;
-                case 'ح':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Tengah tenggorokan';
-                    details = 'Ha (ح), suara keluar dari tengah tenggorokan.';
-                    break;
-                case 'خ':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Ujung tenggorokan';
-                    details = 'Kha (خ), suara keluar dari ujung tenggorokan.';
-                    break;
-                case 'د':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Dal (د), suara keluar dari ujung lidah dan ujung gigi atas.';
-                    break;
-                case 'ذ':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Dzal (ذ), suara keluar dari ujung lidah dan ujung gigi seri atas.';
-                    break;
-                case 'ر':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Ra (ر), suara keluar dari ujung lidah dan sedikit menggulung.';
-                    break;
-                case 'ز':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Zay (ز), suara keluar dari ujung lidah dan gigi atas dengan sedikit desiran.';
-                    break;
-                case 'س':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Sin (س), suara keluar dari ujung lidah dan ujung gigi seri atas.';
-                    break;
-                case 'ش':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Tengah lidah';
-                    details = 'Shin (ش), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
-                    break;
-                case 'ص':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Sad (ص), suara keluar dari ujung lidah dan ujung gigi seri atas dengan desiran.';
-                    break;
-                case 'ض':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Sisi lidah';
-                    details = 'Dhad (ض), suara keluar dari sisi lidah dan gigi seri atas.';
-                    break;
-                case 'ط':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'To (ط), suara keluar dari ujung lidah dan gigi atas dengan tekanan kuat.';
-                    break;
-                case 'ظ':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Dho (ظ), suara keluar dari ujung lidah dan ujung gigi seri atas dengan tekanan kuat.';
-                    break;
-                case 'ع':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Tengah tenggorokan';
-                    details = 'Ain (ع), suara keluar dari tengah tenggorokan.';
-                    break;
-                case 'غ':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Ujung tenggorokan';
-                    details = 'Ghain (غ), suara keluar dari ujung tenggorokan dengan getaran.';
-                    break;
-                case 'ف':
-                    primaryMakhraj = 'Shafatan';
-                    secondaryMakhraj = 'Bibir bawah';
-                    details = 'Fa (ف), suara keluar dari bibir bawah dan ujung gigi seri atas.';
-                    break;
-                case 'ق':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Pangkal lidah';
-                    details = 'Qaf (ق), suara keluar dari pangkal lidah dan langit-langit lunak.';
-                    break;
-                case 'ك':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Pangkal lidah';
-                    details = 'Kaf (ك), suara keluar dari pangkal lidah dan langit-langit keras.';
-                    break;
-                case 'ل':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Lam (ل), suara keluar dari ujung lidah dan langit-langit depan.';
-                    break;
-                case 'م':
-                    primaryMakhraj = 'Shafatan';
-                    secondaryMakhraj = 'Bibir atas';
-                    details = 'Mim (م), suara keluar dari kedua bibir dengan rapat sempurna.';
-                    break;
-                case 'ن':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Ujung lidah';
-                    details = 'Nun (ن), suara keluar dari ujung lidah dan langit-langit depan dengan getaran halus.';
-                    break;
-                case 'و':
-                    primaryMakhraj = 'Shafatan';
-                    secondaryMakhraj = 'Bibir atas';
-                    details = 'Waw (و), suara keluar dari kedua bibir dengan bulat sempurna.';
-                    break;
-                case 'ه':
-                    primaryMakhraj = 'Halaq';
-                    secondaryMakhraj = 'Tengah tenggorokan';
-                    details = 'Ha (ه), suara keluar dari tengah tenggorokan dengan tekanan ringan.';
-                    break;
-                case 'ي':
-                    primaryMakhraj = 'Lisan';
-                    secondaryMakhraj = 'Tengah lidah';
-                    details = 'Ya (ي), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
-                    break;
-                default:
-                    primaryMakhraj = '';
-                    secondaryMakhraj = '';
-                    details = '';
-            }
-            
-            document.getElementById('makhrajPrimary').value = primaryMakhraj;
-            document.getElementById('makhrajSecondary').value = secondaryMakhraj;
-            document.getElementById('makhrajDetails').value = details;
-        }
-
-        function saveAnnotation() {
-            const annotationType = document.getElementById('annotationType').value;
-        
-            if (annotationType === 'makhraj') {
-                // Proses untuk Anotasi Makhraj
-                const letter = document.getElementById('makhrajLetter').value;
-                const primary = document.getElementById('makhrajPrimary').value;
-                const secondary = document.getElementById('makhrajSecondary').value;
-                const details = document.getElementById('makhrajDetails').value;
-                const startTime = document.getElementById('startTime').value;
-                const endTime = document.getElementById('endTime').value;
-                const recordingEnvironment = document.getElementById('recordingEnvironment').value;
-                const recordingQuality = document.getElementById('recordingQuality').value;
-        
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${letter}</td>
-                    <td>${primary}</td>
-                    <td>${secondary}</td>
-                    <td>${details}</td>
-                    <td>${startTime}</td>
-                    <td>${endTime}</td>
-                    <td>${recordingEnvironment}</td>
-                    <td>${recordingQuality}</td>
-                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
-                `;
-                document.getElementById('annotationTableBody').appendChild(row);
-            } else if (annotationType === 'tajwid') {
-                // Proses untuk Anotasi Tajwid
-                const rule = document.getElementById('tajwidRule').value;
-                const subRule = document.getElementById('tajwidSubRule').value;
-                const subSubRule = document.getElementById('tajwidSubSubRule').value;
-                const startTime = document.getElementById('tajwidStartTime').value;
-                const endTime = document.getElementById('tajwidEndTime').value;
-                const context = document.getElementById('tajwidContext').value;
-        
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${rule}</td>
-                    <td>${subRule}</td>
-                    <td>${subSubRule}</td>
-                    <td>${startTime}</td>
-                    <td>${endTime}</td>
-                    <td>${context}</td>
-                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
-                `;
-                document.getElementById('annotationTableBodyTajwid').appendChild(row);
-            }
-        }            
-        
-
-        function deleteAnnotation(element) {
-            // Menghapus row dari tabel
-            element.parentElement.parentElement.remove();
-        }
+        document.getElementById('uploadButton').addEventListener('click', uploadAudio);
     </script>
 
 </body>
