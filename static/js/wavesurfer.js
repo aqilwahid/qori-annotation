@@ -208,6 +208,18 @@ function uploadAudio() {
         const random = (min, max) => Math.random() * (max - min) + min;
         const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
+        wavesurfer.on('decode', () => {
+            // Regions
+            regions.addRegion({
+              start: 9,
+              end: 10,
+              content: 'Cramped region',
+              color: randomColor(),
+              minLength: 1,
+              maxLength: 10,
+            })
+          })
+
         // Event listener untuk region update
         wavesurfer.on('region-updated', (region) => {
             console.log('Updated region', region);
