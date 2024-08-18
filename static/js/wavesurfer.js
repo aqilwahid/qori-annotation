@@ -150,7 +150,7 @@ function uploadAudio() {
     
     if (file) {
         const url = URL.createObjectURL(file);
-        
+        // Hancurkan instance Wavesurfer yang ada, jika ada
         if (wavesurfer) {
             wavesurfer.destroy();
         }
