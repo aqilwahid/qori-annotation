@@ -1,5 +1,9 @@
-  // Fungsi untuk download JSON
-  function completeMakhraj() {
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js/dist/wavesurfer.esm.js';
+import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.esm.js';
+
+  
+  //------------Fungsi untuk download JSON------------
+function completeMakhraj() {
     const table = document.getElementById('annotationTableBody');
     const rows = table.getElementsByTagName('tr');
     const annotations = [];
@@ -8,18 +12,18 @@
     const audioFile = document.getElementById('audioFile').files[0].name;
     const fileName = `annotation_makhraj_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
 
-    for (let i = 0; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        const annotation = {
-            audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
-            letter: cells[0].textContent,
-            makhraj: {
-                primary: cells[1].textContent,
-                secondary: cells[2].textContent,
-                details: cells[3].textContent
-            },
-            start_time: parseFloat(cells[4].textContent),
-            end_time: parseFloat(cells[5].textContent),
+for (let i = 0; i < rows.length; i++) {
+    const cells = rows[i].getElementsByTagName('td');
+    const annotation = {
+        audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
+        letter: cells[0].textContent,
+        makhraj: {
+            primary: cells[1].textContent,
+            secondary: cells[2].textContent,
+            details: cells[3].textContent
+        },
+        start_time: parseFloat(cells[4].textContent),
+        end_time: parseFloat(cells[5].textContent),
             metadata: {
                 qori: "abdulsamad",
                 recitation_style: "Hafs",
@@ -69,7 +73,7 @@ function downloadJSON(json, fileName) {
 }                        
 
 
-// Untuk mengisi pilihan (dropdown) secara dinamis
+//------------Untuk mengisi pilihan (dropdown) secara dinamis------------
 const tajwidRuleSelect = document.getElementById('tajwidRule');
 const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
 const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
@@ -127,10 +131,7 @@ function populateSubSubRules(selectedRule, selectedSubRule) {
 
 
 
-// Script INTI
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js/dist/wavesurfer.esm.js';
-import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.esm.js';
-
+//------------Script INTI------------
 let wavesurfer = null;
 
 function updateTimestamp() {
@@ -144,18 +145,22 @@ function updateTimestamp() {
     requestAnimationFrame(updateTimestamp);
 }
 
+// Inisialisasi plugin Regions
+const regions = RegionsPlugin.create();
+
 function uploadAudio() {
     const fileInput = document.getElementById('audioFile');
     const file = fileInput.files[0];
-    
     if (file) {
-        const url = URL.createObjectURL(file);
-        // Hancurkan instance Wavesurfer yang ada, jika ada
         if (wavesurfer) {
-            wavesurfer.destroy();
+            wavesurfer.destroy(); // Hancurkan instance Wavesurfer yang ada, jika ada
+            const annotationTableBody = document.getElementById('annotationTableBody');
+            annotationTableBody.innerHTML = ''; // Mengosongkan bagian body dari tabel
         }
 
-        // Membuat Wavesurfer instance baru
+        const url = URL.createObjectURL(file);
+        
+        // Membuat instance Wavesurfer baru
         wavesurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#A8DBA8',
@@ -169,9 +174,9 @@ function uploadAudio() {
             minPxPerSec: 100,
             cursorColor: '#000',
             cursorStyle: 'solid',
-            plugins: [regions]
+            // plugins: [regions] Inisialisasi plugin Regions
         });
-        
+
         // Memuat audio
         wavesurfer.load(url);
 
@@ -185,6 +190,7 @@ function uploadAudio() {
             wavesurfer.stop();
         });
 
+        // Tambahkan event listener ketika audio siap dimainkan
         wavesurfer.on('ready', function () {
             updateTimestamp();
 
@@ -194,17 +200,75 @@ function uploadAudio() {
                 cursor.classList.add('waveform-cursor');
             }
 
-            wavesurefer.addRegion({
-                start: 1, // Waktu mulai dalam detik})
-                end: 2, // Waktu akhir dalam detik
-                color: 'rgba(255, 0, 0, 0.1)'
-            });
-        });
+            // Membuat region pada waktu tertentu
+            //wavesurfer.addRegion({
+                //start: 1, // Waktu mulai dalam detik
+                //end: 2, // Waktu akhir dalam detik
+                //color: 'rgba(255, 0, 0, 0.1)'
+            //});
 
-        } else {
+            // Menambahkan region dengan warna acak saat decode selesai
+            //wavesurfer.on('decode', () => {
+                //wavesurfer.addRegion({
+                    //start: 9,
+                    //end: 10,
+                    //content: 'Cramped region',
+                    //color: randomColor(),
+                    //minLength: 1,
+                    //maxLength: 10,
+                    //});
+                //});
+            });
+
+        // Fungsi untuk menghasilkan warna acak
+        //const random = (min, max) => Math.random() * (max - min) + min;
+        //const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
+
+        // Event listener untuk region update
+        //wavesurfer.on('region-updated', (region) => {
+            //console.log('Updated region', region);
+        //});
+
+        // Looping region ketika di-klik
+        //let loop = true;
+        //document.querySelector('input[type="checkbox"]').onclick = (e) => {
+            //loop = e.target.checked;
+        //};
+
+        //let activeRegion = null;
+        //wavesurfer.on('region-in', (region) => {
+            //console.log('region-in', region);
+            //activeRegion = region;
+        //});
+
+        //wavesurfer.on('region-out', (region) => {
+            //console.log('region-out', region);
+            //if (activeRegion === region) {
+                //if (loop) {
+                    //region.play();
+                //} else {
+                    //activeRegion = null;
+                //}
+            //}
+        //});
+
+        //wavesurfer.on('region-click', (region, e) => {
+            //e.stopPropagation(); // Mencegah triggering a click on the waveform
+            //activeRegion = region;
+            //region.play();
+            //region.setOptions({ color: randomColor() });
+        //});
+
+        // Reset active region saat user mengklik waveform
+        //wavesurfer.on('interaction', () => {
+            //activeRegion = null;
+        //});
+
+    } else {
         alert("Please select a file to upload.");
     }
 }
+
 
 function showAnnotationFields() {
     const selectedType = document.getElementById('annotationType').value;
@@ -438,3 +502,13 @@ function deleteAnnotation(element) {
     // Menghapus row dari tabel
     element.parentElement.parentElement.remove();
 }
+
+
+// Menambahkan fungsi ke global scope
+window.uploadAudio = uploadAudio;
+window.showAnnotationFields = showAnnotationFields;
+window.updateFieldsBasedOnLetter = updateFieldsBasedOnLetter;
+window.completeMakhraj = completeMakhraj;
+window.completeTajwid = completeTajwid;
+window.saveAnnotation = saveAnnotation;
+window.deleteAnnotation = deleteAnnotation;
