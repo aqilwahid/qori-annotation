@@ -176,7 +176,7 @@ function uploadAudio() {
             cursorColor: '#000',
             cursorStyle: 'solid',
             plugins: [
-                RegionsPlugin.create() // Inisialisasi plugin Regions
+                regions // Inisialisasi plugin Regions
             ]
         });
 
@@ -211,11 +211,11 @@ function uploadAudio() {
         wavesurfer.on('decode', () => {
             // Regions
             regions.addRegion({
-              start: 9,
-              end: 10,
+              start: 0.1,
+              end: 0.5,
               content: 'Cramped region',
               color: randomColor(),
-              minLength: 1,
+              minLength: 0.1,
               maxLength: 10,
             })
           })
