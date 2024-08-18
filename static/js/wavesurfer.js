@@ -151,6 +151,7 @@ const regions = RegionsPlugin.create();
 function uploadAudio() {
     const fileInput = document.getElementById('audioFile');
     const file = fileInput.files[0];
+
     if (file) {
         if (wavesurfer) {
             wavesurfer.destroy(); // Hancurkan instance Wavesurfer yang ada, jika ada
@@ -159,8 +160,8 @@ function uploadAudio() {
         }
 
         const url = URL.createObjectURL(file);
-        
-        // Membuat instance Wavesurfer baru
+
+        // Membuat instance Wavesurfer baru dengan plugin Regions
         wavesurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#A8DBA8',
@@ -174,7 +175,9 @@ function uploadAudio() {
             minPxPerSec: 100,
             cursorColor: '#000',
             cursorStyle: 'solid',
-            // plugins: [regions] Inisialisasi plugin Regions
+            plugins: [
+                RegionsPlugin.create() // Inisialisasi plugin Regions
+            ]
         });
 
         // Memuat audio
@@ -199,75 +202,51 @@ function uploadAudio() {
             if (cursor) {
                 cursor.classList.add('waveform-cursor');
             }
-
-            // Membuat region pada waktu tertentu
-            //wavesurfer.addRegion({
-                //start: 1, // Waktu mulai dalam detik
-                //end: 2, // Waktu akhir dalam detik
-                //color: 'rgba(255, 0, 0, 0.1)'
-            //});
-
-            // Menambahkan region dengan warna acak saat decode selesai
-            //wavesurfer.on('decode', () => {
-                //wavesurfer.addRegion({
-                    //start: 9,
-                    //end: 10,
-                    //content: 'Cramped region',
-                    //color: randomColor(),
-                    //minLength: 1,
-                    //maxLength: 10,
-                    //});
-                //});
-            });
+        });
 
         // Fungsi untuk menghasilkan warna acak
-        //const random = (min, max) => Math.random() * (max - min) + min;
-        //const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
+        const random = (min, max) => Math.random() * (max - min) + min;
+        const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
         // Event listener untuk region update
-        //wavesurfer.on('region-updated', (region) => {
-            //console.log('Updated region', region);
-        //});
+        wavesurfer.on('region-updated', (region) => {
+            console.log('Updated region', region);
+        });
 
-        // Looping region ketika di-klik
-        //let loop = true;
-        //document.querySelector('input[type="checkbox"]').onclick = (e) => {
-            //loop = e.target.checked;
-        //};
+        let activeRegion = null;
+        wavesurfer.on('region-in', (region) => {
+            console.log('region-in', region);
+            activeRegion = region;
+        });
 
-        //let activeRegion = null;
-        //wavesurfer.on('region-in', (region) => {
-            //console.log('region-in', region);
-            //activeRegion = region;
-        //});
+        wavesurfer.on('region-out', (region) => {
+            console.log('region-out', region);
+            if (activeRegion === region) {
+                if (loop) {
+                    region.play();
+                } else {
+                    activeRegion = null;
+                }
+            }
+        });
 
-        //wavesurfer.on('region-out', (region) => {
-            //console.log('region-out', region);
-            //if (activeRegion === region) {
-                //if (loop) {
-                    //region.play();
-                //} else {
-                    //activeRegion = null;
-                //}
-            //}
-        //});
-
-        //wavesurfer.on('region-click', (region, e) => {
-            //e.stopPropagation(); // Mencegah triggering a click on the waveform
-            //activeRegion = region;
-            //region.play();
-            //region.setOptions({ color: randomColor() });
-        //});
+        wavesurfer.on('region-click', (region, e) => {
+            e.stopPropagation(); // Mencegah triggering a click on the waveform
+            activeRegion = region;
+            region.play();
+            region.setOptions({ color: randomColor() });
+        });
 
         // Reset active region saat user mengklik waveform
-        //wavesurfer.on('interaction', () => {
-            //activeRegion = null;
-        //});
+        wavesurfer.on('interaction', () => {
+            activeRegion = null;
+        });
 
     } else {
         alert("Please select a file to upload.");
     }
 }
+
 
 
 function showAnnotationFields() {
