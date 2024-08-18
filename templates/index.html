@@ -7,6 +7,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
     <link rel="stylesheet" href="../static/css/styles.css">
+    <script type="module" src="../static/js/wavesurfer.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -65,7 +66,7 @@
                             const audioFile = document.getElementById('audioFile').files[0].name;
                             const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
                         
-                            for (let i = 0; i <script rows.length; i++) {
+                            for (let i = 0; i < rows.length; i++) {
                                 const cells = rows[i].getElementsByTagName('td');
                                 const annotation = {
                                     rule: cells[0].textContent,
@@ -111,7 +112,7 @@
                                 <label for="audioFile">Choose Audio File</label>
                                 <input type="file" class="form-control-file" id="audioFile" accept="audio/*">
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="uploadButton()">Upload</button>
+                            <button type="button" class="btn btn-primary" onclick="uploadAudio()">Upload</button>
                         </form>
                     </div>
                 </div>
@@ -168,7 +169,6 @@
 
                         <!-- Waveform -->
                         <div id="waveform"></div>
-                        <script type="module" src="../static/js/wavesurfer.js"></script>
 
                         <!-- Controls -->
                         <div id="controls" class="d-flex justify-content-start">
@@ -385,10 +385,315 @@
         </div>
     </footer>
 
-    <script type="module">
-        import { uploadAudio } from '../static/js/wavesurfer.js';
+    <script>
+        let wavesurfer = null;
+
         
-        document.getElementById('uploadButton').addEventListener('click', uploadAudio);
+        function updateTimestamp() {
+            const currentTime = wavesurfer.getCurrentTime();
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = Math.floor(currentTime % 60);
+            const milliseconds = Math.floor((currentTime % 1) * 1000);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            document.getElementById('time').textContent = timeString;
+
+            requestAnimationFrame(updateTimestamp);
+        }
+
+        function uploadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const url = URL.createObjectURL(file);
+                
+                if (wavesurfer) {
+                    wavesurfer.destroy();
+                }
+
+                // Membuat Wavesurfer instance baru
+                wavesurfer = WaveSurfer.create({
+                    container: '#waveform',
+                    waveColor: '#A8DBA8',
+                    progressColor: '#3B8686',
+                    backend: 'WebAudio',
+                    barWidth: 2,
+                    height: 200,
+                    responsive: true,
+                    cursorWidth: 1,
+                    pixelRatio: 1,
+                    minPxPerSec: 100,
+                    cursorColor: '#000',
+                    cursorStyle: 'solid',
+                    plugins: [regions]
+                });
+                
+                // Memuat audio
+                wavesurfer.load(url);
+
+                // Tombol Play/Pause
+                document.getElementById('playPause').addEventListener('click', function() {
+                    wavesurfer.playPause();
+                });
+
+                // Tombol Stop
+                document.getElementById('stop').addEventListener('click', function() {
+                    wavesurfer.stop();
+                });
+
+                wavesurfer.on('ready', function () {
+                    updateTimestamp();
+
+                    // Tambahkan class ke elemen cursor untuk transisi smooth
+                    const cursor = document.querySelector('.wavesurfer-cursor');
+                    if (cursor) {
+                        cursor.classList.add('waveform-cursor');
+                    }
+
+                    wavesurefer.addRegion({
+                        start: 1, // Waktu mulai dalam detik})
+                        end: 2, // Waktu akhir dalam detik
+                        color: 'rgba(255, 0, 0, 0.1)'
+                    });
+                });
+
+                } else {
+                alert("Please select a file to upload.");
+            }
+        }
+
+        function showAnnotationFields() {
+            const selectedType = document.getElementById('annotationType').value;
+            document.getElementById('makhrajFields').classList.add('hidden');
+            document.getElementById('tajwidFields').classList.add('hidden');
+            document.getElementById('annotationList').classList.add('hidden');
+            document.getElementById('annotationListTajwid').classList.add('hidden');
+            document.getElementById('saveAnnotationBtn').classList.add('hidden');
+        
+            if (selectedType === 'makhraj') {
+                document.getElementById('makhrajFields').classList.remove('hidden');
+                document.getElementById('annotationList').classList.remove('hidden');
+                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
+            } else if (selectedType === 'tajwid') {
+                document.getElementById('tajwidFields').classList.remove('hidden');
+                document.getElementById('annotationListTajwid').classList.remove('hidden');
+                document.getElementById('saveAnnotationBtn').classList.remove('hidden');
+            }
+        }        
+
+        function updateFieldsBasedOnLetter() {
+            const letter = document.getElementById('makhrajLetter').value;
+            let primaryMakhraj = '';
+            let secondaryMakhraj = '';
+            let details = '';
+
+            switch (letter) {
+                case 'ﺍ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Bagian dalam tenggorokan';
+                    details = 'Hamzah (ﺍ), suara keluar dari bagian dalam tenggorokan.';
+                    break;
+                case 'ب':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Ba (ب), suara keluar dari kedua bibir.';
+                    break;
+                case 'ت':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Ta (ت), suara keluar dari ujung lidah dan ujung gigi atas.';
+                    break;
+                case 'ث':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Tha (ث), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ج':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Jim (ج), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                case 'ح':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ha (ح), suara keluar dari tengah tenggorokan.';
+                    break;
+                case 'خ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Ujung tenggorokan';
+                    details = 'Kha (خ), suara keluar dari ujung tenggorokan.';
+                    break;
+                case 'د':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dal (د), suara keluar dari ujung lidah dan ujung gigi atas.';
+                    break;
+                case 'ذ':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dzal (ذ), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ر':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Ra (ر), suara keluar dari ujung lidah dan sedikit menggulung.';
+                    break;
+                case 'ز':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Zay (ز), suara keluar dari ujung lidah dan gigi atas dengan sedikit desiran.';
+                    break;
+                case 'س':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Sin (س), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+                    break;
+                case 'ش':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Shin (ش), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                case 'ص':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Sad (ص), suara keluar dari ujung lidah dan ujung gigi seri atas dengan desiran.';
+                    break;
+                case 'ض':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Sisi lidah';
+                    details = 'Dhad (ض), suara keluar dari sisi lidah dan gigi seri atas.';
+                    break;
+                case 'ط':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'To (ط), suara keluar dari ujung lidah dan gigi atas dengan tekanan kuat.';
+                    break;
+                case 'ظ':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Dho (ظ), suara keluar dari ujung lidah dan ujung gigi seri atas dengan tekanan kuat.';
+                    break;
+                case 'ع':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ain (ع), suara keluar dari tengah tenggorokan.';
+                    break;
+                case 'غ':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Ujung tenggorokan';
+                    details = 'Ghain (غ), suara keluar dari ujung tenggorokan dengan getaran.';
+                    break;
+                case 'ف':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir bawah';
+                    details = 'Fa (ف), suara keluar dari bibir bawah dan ujung gigi seri atas.';
+                    break;
+                case 'ق':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Pangkal lidah';
+                    details = 'Qaf (ق), suara keluar dari pangkal lidah dan langit-langit lunak.';
+                    break;
+                case 'ك':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Pangkal lidah';
+                    details = 'Kaf (ك), suara keluar dari pangkal lidah dan langit-langit keras.';
+                    break;
+                case 'ل':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Lam (ل), suara keluar dari ujung lidah dan langit-langit depan.';
+                    break;
+                case 'م':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Mim (م), suara keluar dari kedua bibir dengan rapat sempurna.';
+                    break;
+                case 'ن':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Ujung lidah';
+                    details = 'Nun (ن), suara keluar dari ujung lidah dan langit-langit depan dengan getaran halus.';
+                    break;
+                case 'و':
+                    primaryMakhraj = 'Shafatan';
+                    secondaryMakhraj = 'Bibir atas';
+                    details = 'Waw (و), suara keluar dari kedua bibir dengan bulat sempurna.';
+                    break;
+                case 'ه':
+                    primaryMakhraj = 'Halaq';
+                    secondaryMakhraj = 'Tengah tenggorokan';
+                    details = 'Ha (ه), suara keluar dari tengah tenggorokan dengan tekanan ringan.';
+                    break;
+                case 'ي':
+                    primaryMakhraj = 'Lisan';
+                    secondaryMakhraj = 'Tengah lidah';
+                    details = 'Ya (ي), suara keluar dari tengah lidah dan langit-langit tengah mulut.';
+                    break;
+                default:
+                    primaryMakhraj = '';
+                    secondaryMakhraj = '';
+                    details = '';
+            }
+            
+            document.getElementById('makhrajPrimary').value = primaryMakhraj;
+            document.getElementById('makhrajSecondary').value = secondaryMakhraj;
+            document.getElementById('makhrajDetails').value = details;
+        }
+
+        function saveAnnotation() {
+            const annotationType = document.getElementById('annotationType').value;
+        
+            if (annotationType === 'makhraj') {
+                // Proses untuk Anotasi Makhraj
+                const letter = document.getElementById('makhrajLetter').value;
+                const primary = document.getElementById('makhrajPrimary').value;
+                const secondary = document.getElementById('makhrajSecondary').value;
+                const details = document.getElementById('makhrajDetails').value;
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                const recordingEnvironment = document.getElementById('recordingEnvironment').value;
+                const recordingQuality = document.getElementById('recordingQuality').value;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${letter}</td>
+                    <td>${primary}</td>
+                    <td>${secondary}</td>
+                    <td>${details}</td>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td>${recordingEnvironment}</td>
+                    <td>${recordingQuality}</td>
+                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
+                `;
+                document.getElementById('annotationTableBody').appendChild(row);
+            } else if (annotationType === 'tajwid') {
+                // Proses untuk Anotasi Tajwid
+                const rule = document.getElementById('tajwidRule').value;
+                const subRule = document.getElementById('tajwidSubRule').value;
+                const subSubRule = document.getElementById('tajwidSubSubRule').value;
+                const startTime = document.getElementById('tajwidStartTime').value;
+                const endTime = document.getElementById('tajwidEndTime').value;
+                const context = document.getElementById('tajwidContext').value;
+        
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rule}</td>
+                    <td>${subRule}</td>
+                    <td>${subSubRule}</td>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td>${context}</td>
+                    <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
+                `;
+                document.getElementById('annotationTableBodyTajwid').appendChild(row);
+            }
+        }            
+        
+
+        function deleteAnnotation(element) {
+            // Menghapus row dari tabel
+            element.parentElement.parentElement.remove();
+        }
     </script>
 
 </body>

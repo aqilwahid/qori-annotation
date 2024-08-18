@@ -1,26 +1,61 @@
 import WaveSurfer from 'https://unpkg.com/wavesurfer.js/dist/wavesurfer.esm.js';
 import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.esm.js';
 
-let wavesurfer = null;
+// Inisialisasi plugin Regions
+const regions = RegionsPlugin.create();
 
-function updateTimestamp() {
-    const currentTime = wavesurfer.getCurrentTime();
-    const minutes = Math.floor(currentTime / 60);
-    const seconds = Math.floor(currentTime % 60);
-    const milliseconds = Math.floor((currentTime % 1) * 1000);
-    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
-    document.getElementById('time').textContent = timeString;
 
-    requestAnimationFrame(updateTimestamp);
-}
+wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: '#A8DBA8',
+    progressColor: '#3B8686',
+    backend: 'WebAudio',
+    barWidth: 2,
+    height: 200,
+    responsive: true,
+    cursorWidth: 1,
+    pixelRatio: 1,
+    minPxPerSec: 100,
+    cursorColor: '#000',
+    cursorStyle: 'solid',
+    plugins: [regions]
+});
 
-export function uploadAudio() {
+// Fungsi untuk menghasilkan warna acak
+const random = (min, max) => Math.random() * (max - min) + min;
+const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
+
+// Buat beberapa region pada waktu tertentu
+wavesurfer.on('decode', () => {
+  regions.addRegion({
+    start: 1,
+    end: 2,
+    content: 'Cramped region',
+    color: randomColor(),
+    minLength: 1,
+    maxLength: 10,
+  });
+});
+
+regions.enableDragSelection({
+  color: 'rgba(255, 0, 0, 0.1)',
+});
+
+regions.on('region-updated', (region) => {
+  console.log('Updated region', region);
+});
+
+function uploadAudio() {
     const fileInput = document.getElementById('audioFile');
     const file = fileInput.files[0];
     if (file) {
         const url = URL.createObjectURL(file);
+        
+        if (WaveSurfer) {
+            WaveSurfer.destroy();
+        }
 
-        const wavesurfer = WaveSurfer.create({
+        WaveSurfer = WaveSurfer.create({
             container: '#waveform',
             waveColor: '#A8DBA8',
             progressColor: '#3B8686',
@@ -32,41 +67,15 @@ export function uploadAudio() {
             pixelRatio: 1,
             minPxPerSec: 100,
             cursorColor: '#000',
-            cursorStyle: 'solid',
-            plugins: [
-                RegionsPlugin.create({
-                    dragSelection: {
-                        slop: 5,
-                        color: 'rgba(0, 0, 255, 0.1)',
-                    }
-                })
-            ]
+            cursorStyle: 'solid'
         });
 
-        wavesurfer.load(url);
+        WaveSurfer.load(url);
 
-        document.getElementById('playPause').addEventListener('click', () => wavesurfer.playPause());
-        document.getElementById('stop').addEventListener('click', () => wavesurfer.stop());
+        document.getElementById('playPause').addEventListener('click', () => WaveSurfer.playPause());
+        document.getElementById('stop').addEventListener('click', () => WaveSurfer.stop());
 
-        wavesurfer.on('ready', () => {
-            updateTimestamp();
-            const cursor = document.querySelector('.wavesurfer-cursor');
-            if (cursor) {
-                cursor.classList.add('waveform-cursor');
-            }
-        });
-        
-        wavesurfer.on('region-created', (region) => {
-            console.log('Region created:', region);
-        });
-
-        wavesurfer.on('region-updated', (region) => {
-            console.log('Region updated:', region);
-        });
-
-        wavesurfer.on('region-removed', (region) => {
-            console.log('Region removed:', region);
-        });
+        WaveSurfer.on('ready', updateTimestamp);
     } else {
         alert("Please select a file to upload.");
     }
