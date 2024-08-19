@@ -133,6 +133,7 @@ function populateSubSubRules(selectedRule, selectedSubRule) {
 
 //------------Script INTI------------
 let wavesurfer = null;
+let activeRegion = null;
 
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
@@ -198,12 +199,6 @@ function uploadAudio() {
         wavesurfer.on('ready', function () {
             updateTimestamp();
 
-            // Tambahkan class ke elemen cursor untuk transisi smooth
-            const cursor = document.querySelector('.wavesurfer-cursor');
-            if (cursor) {
-                cursor.classList.add('waveform-cursor');
-            }
-
             // Setup Zoom Slider
             const zoomSlider = document.getElementById('zoom-slider');
             zoomSlider.addEventListener('input', function() {
@@ -228,37 +223,30 @@ function uploadAudio() {
             });
         });
 
-        // Event listener untuk region update
-        wavesurfer.on('region-updated', (region) => {
-            activeRegion = region;
-            console.log('Updated region', region);
-        });
-
-        let activeRegion = null;
+        // Event listener untuk region in
         wavesurfer.on('region-in', (region) => {
-            activeRegion = region;
             console.log('region-in', region);
+            activeRegion = region;
+            region.play(); // Memulai playback dalam region saat masuk ke region
         });
-
+        
+        // Event listener untuk region out
         wavesurfer.on('region-out', (region) => {
             console.log('region-out', region);
             if (activeRegion === region) {
-                if (loop) {
-                    region.play();
-                } else {
-                    activeRegion = null;
-                }
+                region.play(region.start); // Memutar ulang region ketika keluar dari region
             }
         });
-
+        
+        // Event listener untuk region click
         wavesurfer.on('region-click', (region, e) => {
             e.stopPropagation(); // Mencegah triggering a click on the waveform
             activeRegion = region;
-            region.play();
+            region.play(region.start);
             region.setOptions({ color: randomColor() });
         });
-
-        // Reset active region saat user mengklik waveform
+        
+        // Reset active region saat user mengklik waveform di luar region
         wavesurfer.on('interaction', () => {
             activeRegion = null;
         });
@@ -267,8 +255,6 @@ function uploadAudio() {
         alert("Please select a file to upload.");
     }
 }
-
-
 
 
 function showAnnotationFields() {
