@@ -230,14 +230,13 @@ function uploadAudio() {
 
         // Event listener untuk region update
         wavesurfer.on('region-updated', (region) => {
-            activeRegion = region;
             console.log('Updated region', region);
         });
 
         let activeRegion = null;
         wavesurfer.on('region-in', (region) => {
-            activeRegion = region;
             console.log('region-in', region);
+            activeRegion = region;
         });
 
         wavesurfer.on('region-out', (region) => {
@@ -449,16 +448,16 @@ function updateFieldsBasedOnLetter() {
 }
 
 function saveAnnotation() {
-const annotationType = document.getElementById('annotationType').value;
+    const annotationType = document.getElementById('annotationType').value;
 
-if (annotationType === 'makhraj') {
-    if (activeRegion) {
+    if (annotationType === 'makhraj') {
+        // Proses untuk Anotasi Makhraj
         const letter = document.getElementById('makhrajLetter').value;
         const primary = document.getElementById('makhrajPrimary').value;
         const secondary = document.getElementById('makhrajSecondary').value;
         const details = document.getElementById('makhrajDetails').value;
-        const startTime = activeRegion.start.toFixed(3); // Gunakan waktu dari region
-        const endTime = activeRegion.end.toFixed(3); // Gunakan waktu dari region
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
         const recordingEnvironment = document.getElementById('recordingEnvironment').value;
         const recordingQuality = document.getElementById('recordingQuality').value;
 
@@ -474,7 +473,7 @@ if (annotationType === 'makhraj') {
             <td>${recordingQuality}</td>
             <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
         `;
-        document.getElementById('annotationTableBody').appendChild(row);}
+        document.getElementById('annotationTableBody').appendChild(row);
     } else if (annotationType === 'tajwid') {
         // Proses untuk Anotasi Tajwid
         const rule = document.getElementById('tajwidRule').value;
