@@ -172,9 +172,10 @@ function uploadAudio() {
             responsive: true,
             cursorWidth: 1,
             pixelRatio: 1,
-            minPxPerSec: 100,
+            minPxPerSec: 100, // Nilai ini akan diubah oleh slider zoom
             cursorColor: '#000',
             cursorStyle: 'solid',
+            scrollParent: true, // Mengaktifkan scrollbar horizontal
             plugins: [
                 regions // Inisialisasi plugin Regions
             ]
@@ -202,6 +203,13 @@ function uploadAudio() {
             if (cursor) {
                 cursor.classList.add('waveform-cursor');
             }
+
+            // Setup Zoom Slider
+            const zoomSlider = document.getElementById('zoom-slider');
+            zoomSlider.addEventListener('input', function() {
+                const zoomLevel = Number(this.value);
+                wavesurfer.zoom(zoomLevel); // Mengatur zoom level berdasarkan slider
+            });
         });
 
         // Fungsi untuk menghasilkan warna acak
@@ -213,22 +221,23 @@ function uploadAudio() {
             regions.addRegion({
               start: 0.1,
               end: 0.5,
-              content: 'Cramped region',
+              content: 'Area Anotasi',
               color: randomColor(),
-              minLength: 0.1,
-              maxLength: 10,
-            })
-          })
+              minLength: 0.01,
+              maxLength: 100,
+            });
+        });
 
         // Event listener untuk region update
         wavesurfer.on('region-updated', (region) => {
+            activeRegion = region;
             console.log('Updated region', region);
         });
 
         let activeRegion = null;
         wavesurfer.on('region-in', (region) => {
-            console.log('region-in', region);
             activeRegion = region;
+            console.log('region-in', region);
         });
 
         wavesurfer.on('region-out', (region) => {
@@ -258,6 +267,7 @@ function uploadAudio() {
         alert("Please select a file to upload.");
     }
 }
+
 
 
 
@@ -439,16 +449,16 @@ function updateFieldsBasedOnLetter() {
 }
 
 function saveAnnotation() {
-    const annotationType = document.getElementById('annotationType').value;
+const annotationType = document.getElementById('annotationType').value;
 
-    if (annotationType === 'makhraj') {
-        // Proses untuk Anotasi Makhraj
+if (annotationType === 'makhraj') {
+    if (activeRegion) {
         const letter = document.getElementById('makhrajLetter').value;
         const primary = document.getElementById('makhrajPrimary').value;
         const secondary = document.getElementById('makhrajSecondary').value;
         const details = document.getElementById('makhrajDetails').value;
-        const startTime = document.getElementById('startTime').value;
-        const endTime = document.getElementById('endTime').value;
+        const startTime = activeRegion.start.toFixed(3); // Gunakan waktu dari region
+        const endTime = activeRegion.end.toFixed(3); // Gunakan waktu dari region
         const recordingEnvironment = document.getElementById('recordingEnvironment').value;
         const recordingQuality = document.getElementById('recordingQuality').value;
 
@@ -464,7 +474,7 @@ function saveAnnotation() {
             <td>${recordingQuality}</td>
             <td><span class="delete-icon" onclick="deleteAnnotation(this)">🗑️</span></td>
         `;
-        document.getElementById('annotationTableBody').appendChild(row);
+        document.getElementById('annotationTableBody').appendChild(row);}
     } else if (annotationType === 'tajwid') {
         // Proses untuk Anotasi Tajwid
         const rule = document.getElementById('tajwidRule').value;
