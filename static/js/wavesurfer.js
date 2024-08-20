@@ -1,136 +1,6 @@
 import WaveSurfer from 'https://unpkg.com/wavesurfer.js/dist/wavesurfer.esm.js';
 import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.esm.js';
 
-  
-  //------------Fungsi untuk download JSON------------
-function completeMakhraj() {
-    const table = document.getElementById('annotationTableBody');
-    const rows = table.getElementsByTagName('tr');
-    const annotations = [];
-
-    // Dapatkan nama file audio yang diupload
-    const audioFile = document.getElementById('audioFile').files[0].name;
-    const fileName = `annotation_makhraj_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
-
-for (let i = 0; i < rows.length; i++) {
-    const cells = rows[i].getElementsByTagName('td');
-    const annotation = {
-        audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
-        letter: cells[0].textContent,
-        makhraj: {
-            primary: cells[1].textContent,
-            secondary: cells[2].textContent,
-            details: cells[3].textContent
-        },
-        start_time: parseFloat(cells[4].textContent),
-        end_time: parseFloat(cells[5].textContent),
-            metadata: {
-                qori: "abdulsamad",
-                recitation_style: "Hafs",
-                recording_environment: cells[6].textContent,
-                recording_quality: cells[7].textContent
-            }
-        };
-        annotations.push(annotation);
-    }
-
-    const json = JSON.stringify(annotations, null, 2);
-    downloadJSON(json, fileName);
-}                                  
-function completeTajwid() {
-    const table = document.getElementById('annotationTableBodyTajwid');
-    const rows = table.getElementsByTagName('tr');
-    const annotations = [];
-
-    // Dapatkan nama file audio yang diupload
-    const audioFile = document.getElementById('audioFile').files[0].name;
-    const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
-
-    for (let i = 0; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagName('td');
-        const annotation = {
-            rule: cells[0].textContent,
-            sub_rule: cells[1].textContent,
-            sub_sub_rule: cells[2].textContent,
-            start_time: parseFloat(cells[3].textContent),
-            end_time: parseFloat(cells[4].textContent),
-            context: cells[5].textContent
-        };
-        annotations.push(annotation);
-    }
-
-    const json = JSON.stringify(annotations, null, 2);
-    downloadJSON(json, fileName);
-}                          
-function downloadJSON(json, fileName) {
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName; // Nama file diatur sesuai dengan input
-    a.click();
-    URL.revokeObjectURL(url);
-}                        
-
-
-//------------Untuk mengisi pilihan (dropdown) secara dinamis------------
-const tajwidRuleSelect = document.getElementById('tajwidRule');
-const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
-const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
-
-const tajwidOptions = {
-    "Mad": {
-        "Mad Thabi'i": ["Mad Thabi'i"],
-        "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
-    },
-    "Hukum Nun Mati": {
-        "Izhar": ["Izhar Halqi"],
-        "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
-        "Iqlab": ["Iqlab"],
-        "Ikhfa": ["Ikhfa Haqiqi"]
-    },
-    "Hukum Mim Mati": {
-        "Ikhfa Syafawi": ["Ikhfa Syafawi"],
-        "Idgham Mitslain": ["Idgham Mitslain"]
-    }
-};
-
-tajwidRuleSelect.addEventListener('change', function() {
-    const selectedRule = tajwidRuleSelect.value;
-    populateSubRules(selectedRule);
-    tajwidSubSubRuleSelect.innerHTML = ''; // Clear sub-sub rule options when changing the rule
-});
-
-tajwidSubRuleSelect.addEventListener('change', function() {
-    const selectedRule = tajwidRuleSelect.value;
-    const selectedSubRule = tajwidSubRuleSelect.value;
-    populateSubSubRules(selectedRule, selectedSubRule);
-});
-
-function populateSubRules(selectedRule) {
-    tajwidSubRuleSelect.innerHTML = '';
-    const subRules = tajwidOptions[selectedRule];
-    for (let subRule in subRules) {
-        let option = document.createElement('option');
-        option.value = subRule;
-        option.textContent = subRule;
-        tajwidSubRuleSelect.appendChild(option);
-    }
-}
-
-function populateSubSubRules(selectedRule, selectedSubRule) {
-    tajwidSubSubRuleSelect.innerHTML = '';
-    const subSubRules = tajwidOptions[selectedRule][selectedSubRule];
-    subSubRules.forEach(function(subSubRule) {
-        let option = document.createElement('option');
-        option.value = subSubRule;
-        option.textContent = subSubRule;
-        tajwidSubSubRuleSelect.appendChild(option);
-    });
-}
-
-
-
 //------------Script INTI------------
 let wavesurfer = null;
 
@@ -267,8 +137,133 @@ function uploadAudio() {
     }
 }
 
+//------------Fungsi untuk download JSON------------
+function completeMakhraj() {
+    const table = document.getElementById('annotationTableBody');
+    const rows = table.getElementsByTagName('tr');
+    const annotations = [];
 
+    // Dapatkan nama file audio yang diupload
+    const audioFile = document.getElementById('audioFile').files[0].name;
+    const fileName = `annotation_makhraj_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
 
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        const annotation = {
+            audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
+            letter: cells[0].textContent,
+            makhraj: {
+                primary: cells[1].textContent,
+                secondary: cells[2].textContent,
+                details: cells[3].textContent
+            },
+            start_time: parseFloat(cells[4].textContent),
+            end_time: parseFloat(cells[5].textContent),
+            metadata: {
+                qori: "abdulsamad",
+                recitation_style: "Hafs",
+                recording_environment: cells[6].textContent,
+                recording_quality: cells[7].textContent
+            }
+        };
+        annotations.push(annotation);
+    }
+
+    const json = JSON.stringify(annotations, null, 2);
+    downloadJSON(json, fileName);
+}
+
+function completeTajwid() {
+    const table = document.getElementById('annotationTableBodyTajwid');
+    const rows = table.getElementsByTagName('tr');
+    const annotations = [];
+
+    // Dapatkan nama file audio yang diupload
+    const audioFile = document.getElementById('audioFile').files[0].name;
+    const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
+
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        const annotation = {
+            rule: cells[0].textContent,
+            sub_rule: cells[1].textContent,
+            sub_sub_rule: cells[2].textContent,
+            start_time: parseFloat(cells[3].textContent),
+            end_time: parseFloat(cells[4].textContent),
+            context: cells[5].textContent
+        };
+        annotations.push(annotation);
+    }
+
+    const json = JSON.stringify(annotations, null, 2);
+    downloadJSON(json, fileName);
+}
+
+function downloadJSON(json, fileName) {
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName; // Nama file diatur sesuai dengan input
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+//------------Untuk mengisi pilihan (dropdown) secara dinamis------------
+const tajwidRuleSelect = document.getElementById('tajwidRule');
+const tajwidSubRuleSelect = document.getElementById('tajwidSubRule');
+const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
+
+const tajwidOptions = {
+    "Mad": {
+        "Mad Thabi'i": ["Mad Thabi'i"],
+        "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
+    },
+    "Hukum Nun Mati": {
+        "Izhar": ["Izhar Halqi"],
+        "Idgham": ["Idgham Bighunnah", "Idgham Bilaghunnah"],
+        "Iqlab": ["Iqlab"],
+        "Ikhfa": ["Ikhfa Haqiqi"]
+    },
+    "Hukum Mim Mati": {
+        "Ikhfa Syafawi": ["Ikhfa Syafawi"],
+        "Idgham Mitslain": ["Idgham Mitslain"]
+    }
+};
+
+tajwidRuleSelect.addEventListener('change', function() {
+    const selectedRule = tajwidRuleSelect.value;
+    populateSubRules(selectedRule);
+    tajwidSubSubRuleSelect.innerHTML = ''; // Clear sub-sub rule options when changing the rule
+});
+
+tajwidSubRuleSelect.addEventListener('change', function() {
+    const selectedRule = tajwidRuleSelect.value;
+    const selectedSubRule = tajwidSubRuleSelect.value;
+    populateSubSubRules(selectedRule, selectedSubRule);
+});
+
+function populateSubRules(selectedRule) {
+    tajwidSubRuleSelect.innerHTML = '';
+    const subRules = tajwidOptions[selectedRule];
+    for (let subRule in subRules) {
+        let option = document.createElement('option');
+        option.value = subRule;
+        option.textContent = subRule;
+        tajwidSubRuleSelect.appendChild(option);
+    }
+}
+
+function populateSubSubRules(selectedRule, selectedSubRule) {
+    tajwidSubSubRuleSelect.innerHTML = '';
+    const subSubRules = tajwidOptions[selectedRule][selectedSubRule];
+    subSubRules.forEach(function(subSubRule) {
+        let option = document.createElement('option');
+        option.value = subSubRule;
+        option.textContent = subSubRule;
+        tajwidSubSubRuleSelect.appendChild(option);
+    });
+}
 
 function showAnnotationFields() {
     const selectedType = document.getElementById('annotationType').value;
@@ -287,7 +282,7 @@ function showAnnotationFields() {
         document.getElementById('annotationListTajwid').classList.remove('hidden');
         document.getElementById('saveAnnotationBtn').classList.remove('hidden');
     }
-}        
+}
 
 function updateFieldsBasedOnLetter() {
     const letter = document.getElementById('makhrajLetter').value;
@@ -495,14 +490,12 @@ function saveAnnotation() {
         `;
         document.getElementById('annotationTableBodyTajwid').appendChild(row);
     }
-}            
-
+}
 
 function deleteAnnotation(element) {
     // Menghapus row dari tabel
     element.parentElement.parentElement.remove();
 }
-
 
 // Menambahkan fungsi ke global scope
 window.uploadAudio = uploadAudio;
