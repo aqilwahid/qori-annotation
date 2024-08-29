@@ -98,9 +98,15 @@ function uploadAudio() {
             });
         });
 
-        // Event listener untuk region update
+        // Event listener untuk region update 
+        wavesurfer.on('region-created', (region) => {
+            document.getElementById('startTime').value = region.start.toFixed(3);
+            document.getElementById('endTime').value = region.end.toFixed(3);
+        });
+
         wavesurfer.on('region-updated', (region) => {
-            console.log('Updated region', region);
+            document.getElementById('startTime').value = region.start.toFixed(3);
+            document.getElementById('endTime').value = region.end.toFixed(3);
         });
 
         let activeRegion = null;
@@ -125,8 +131,11 @@ function uploadAudio() {
             activeRegion = region;
             region.play();
             region.setOptions({ color: randomColor() });
-        });
 
+            document.getElementById('startTime').value = region.start.toFixed(3);
+            document.getElementById('endTime').value = region.end.toFixed(3);
+        });
+        
         // Reset active region saat user mengklik waveform
         wavesurfer.on('interaction', () => {
             activeRegion = null;
@@ -451,7 +460,7 @@ function saveAnnotation() {
         const primary = document.getElementById('makhrajPrimary').value;
         const secondary = document.getElementById('makhrajSecondary').value;
         const details = document.getElementById('makhrajDetails').value;
-        const startTime = document.getElementById('startTime').value;
+        const startTime = document.getElementById('makhrajstartTime').value;
         const endTime = document.getElementById('endTime').value;
         const recordingEnvironment = document.getElementById('recordingEnvironment').value;
         const recordingQuality = document.getElementById('recordingQuality').value;

@@ -9,4 +9,4 @@ def index():
 if __name__ == '__main__':
     app.run(debug=True)
 
-# Note: Untuk memanggil waktu (seccond) dari wavesurfer.js, gunakan getCurrentTime()
+# Note: -
