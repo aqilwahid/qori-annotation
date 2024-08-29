@@ -3,6 +3,7 @@ import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.
 
 //------------Script INTI------------
 let wavesurfer = null;
+let activeRegion = null;
 
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
@@ -40,15 +41,11 @@ function uploadAudio() {
             barWidth: 2,
             height: 200,
             responsive: true,
-            cursorWidth: 1,
+            cursorWidth: 0,  // Disable cursor
             pixelRatio: 1,
-            minPxPerSec: 100, // Nilai ini akan diubah oleh slider zoom
-            cursorColor: '#000',
-            cursorStyle: 'solid',
-            scrollParent: true, // Mengaktifkan scrollbar horizontal
-            plugins: [
-                regions // Inisialisasi plugin Regions
-            ]
+            minPxPerSec: 100,
+            scrollParent: true,
+            plugins: [ regions ]
         });
 
         // Memuat audio
@@ -59,21 +56,19 @@ function uploadAudio() {
             wavesurfer.playPause();
         });
 
-        // Tombol Stop
         document.getElementById('stop').addEventListener('click', function() {
             wavesurfer.stop();
         });
 
-        // Tambahkan event listener ketika audio siap dimainkan
         wavesurfer.on('ready', function () {
             updateTimestamp();
 
-            // Setup Zoom Slider
             const zoomSlider = document.getElementById('zoom-slider');
             zoomSlider.addEventListener('input', function() {
                 const zoomLevel = Number(this.value);
-                wavesurfer.zoom(zoomLevel); // Mengatur zoom level berdasarkan slider
+                wavesurfer.zoom(zoomLevel);
             });
+
         });
 
         // Fungsi untuk menghasilkan warna acak
@@ -92,8 +87,11 @@ function uploadAudio() {
             });
         });
 
-        // Fungsi untuk mengupdate start dan end time
-        function updateStartEndTime(region) {
+         // Fungsi untuk mengupdate start dan end time
+         function updateStartEndTime(region) {
+            document.getElementById('start-time-display').textContent = `Start: ${region.start.toFixed(3)}`;
+            document.getElementById('end-time-display').textContent = `End: ${region.end.toFixed(3)}`;
+
             const annotationType = document.getElementById('annotationType').value;
             if (annotationType === 'makhraj') {
                 document.getElementById('makhrajStartTime').value = region.start.toFixed(3);
@@ -104,12 +102,21 @@ function uploadAudio() {
             }
         }
 
+
         // Event listener untuk region update 
         wavesurfer.on('region-created', (region) => {
+            activeRegion = region;
             updateStartEndTime(region);
         });
 
         wavesurfer.on('region-updated', (region) => {
+            updateStartEndTime(region);
+        });
+
+        wavesurfer.on('region-click', (region, e) => {
+            e.stopPropagation();
+            activeRegion = region;
+            region.play();
             updateStartEndTime(region);
         });
 
@@ -122,28 +129,17 @@ function uploadAudio() {
         wavesurfer.on('region-out', (region) => {
             console.log('region-out', region);
             if (activeRegion === region) {
-                if (loop) {
-                    region.play();
-                } else {
-                    activeRegion = null;
-                }
+                activeRegion = null;
             }
         });
 
-        wavesurfer.on('region-click', (region, e) => {
-            e.stopPropagation(); // Mencegah triggering a click on the waveform
-            activeRegion = region;
-            region.play();
-            region.setOptions({ color: randomColor() });
-
-            updateStartEndTime(region);
-        });
-        
         // Reset active region saat user mengklik waveform
         wavesurfer.on('interaction', () => {
-            activeRegion = null;
+            if (activeRegion) {
+                activeRegion.remove();
+                activeRegion = null;
+            }
         });
-
     } else {
         alert("Please select a file to upload.");
     }
@@ -463,8 +459,8 @@ function saveAnnotation() {
         const primary = document.getElementById('makhrajPrimary').value;
         const secondary = document.getElementById('makhrajSecondary').value;
         const details = document.getElementById('makhrajDetails').value;
-        const startTime = document.getElementById('makhrajstartTime').value;
-        const endTime = document.getElementById('endTime').value;
+        const startTime = document.getElementById('makhrajStartTime').value;
+        const endTime = document.getElementById('makhrajEndTime').value;
         const recordingEnvironment = document.getElementById('recordingEnvironment').value;
         const recordingQuality = document.getElementById('recordingQuality').value;
 
