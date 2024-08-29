@@ -68,12 +68,6 @@ function uploadAudio() {
         wavesurfer.on('ready', function () {
             updateTimestamp();
 
-            // Tambahkan class ke elemen cursor untuk transisi smooth
-            const cursor = document.querySelector('.wavesurfer-cursor');
-            if (cursor) {
-                cursor.classList.add('waveform-cursor');
-            }
-
             // Setup Zoom Slider
             const zoomSlider = document.getElementById('zoom-slider');
             zoomSlider.addEventListener('input', function() {
@@ -98,15 +92,25 @@ function uploadAudio() {
             });
         });
 
+        // Fungsi untuk mengupdate start dan end time
+        function updateStartEndTime(region) {
+            const annotationType = document.getElementById('annotationType').value;
+            if (annotationType === 'makhraj') {
+                document.getElementById('makhrajStartTime').value = region.start.toFixed(3);
+                document.getElementById('makhrajEndTime').value = region.end.toFixed(3);
+            } else if (annotationType === 'tajwid') {
+                document.getElementById('tajwidStartTime').value = region.start.toFixed(3);
+                document.getElementById('tajwidEndTime').value = region.end.toFixed(3);
+            }
+        }
+
         // Event listener untuk region update 
         wavesurfer.on('region-created', (region) => {
-            document.getElementById('startTime').value = region.start.toFixed(3);
-            document.getElementById('endTime').value = region.end.toFixed(3);
+            updateStartEndTime(region);
         });
 
         wavesurfer.on('region-updated', (region) => {
-            document.getElementById('startTime').value = region.start.toFixed(3);
-            document.getElementById('endTime').value = region.end.toFixed(3);
+            updateStartEndTime(region);
         });
 
         let activeRegion = null;
@@ -132,8 +136,7 @@ function uploadAudio() {
             region.play();
             region.setOptions({ color: randomColor() });
 
-            document.getElementById('startTime').value = region.start.toFixed(3);
-            document.getElementById('endTime').value = region.end.toFixed(3);
+            updateStartEndTime(region);
         });
         
         // Reset active region saat user mengklik waveform
