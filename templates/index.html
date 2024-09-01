@@ -115,7 +115,7 @@
                         </div>
 
                         <!-- Time Stamp -->
-                        <div id="time">0:00.000</div>
+                        <div id="time">0:00.00</div>
 
                         <!-- Dropdown Selection -->
                         <div class="form-group">
@@ -130,8 +130,9 @@
                         <!-- Makhraj Annotation Fields -->
                         <div id="makhrajFields" class="hidden">
                             <div class="form-group">
-                                <label for="makhrajLetter">Letter</label>
+                                <label for="makhrajLetter">Huruf Hijaiyah</label>
                                 <select class="form-control" id="makhrajLetter" onchange="updateFieldsBasedOnLetter()">
+                                    <option value="">Pilih Huruf</option>
                                     <option value="ﺍ">ﺍ</option>
                                     <option value="ب">ب</option>
                                     <option value="ت">ت</option>
@@ -214,8 +215,9 @@
                         <!-- Tajwid Annotation Fields -->
                         <div id="tajwidFields" class="hidden">
                             <div class="form-group">
-                                <label for="tajwidRule">Tajwid Rule</label>
+                                <label for="tajwidRule">Aturan Tajwid</label>
                                 <select class="form-control" id="tajwidRule">
+                                    <option value="" selected>Belum Dipilih</option>
                                     <option value="Mad">Mad</option>
                                     <option value="Hukum Nun Mati">Hukum Nun Mati</option>
                                     <option value="Hukum Mim Mati">Hukum Mim Mati</option>
@@ -226,6 +228,7 @@
                             <div class="form-group">
                                 <label for="tajwidSubRule">Sub Rule</label>
                                 <select class="form-control" id="tajwidSubRule">
+                                    <option value="" selected>Belum Dipilih</option>
                                     <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>
@@ -234,6 +237,7 @@
                             <div class="form-group">
                                 <label for="tajwidSubSubRule">Sub Sub Rule</label>
                                 <select class="form-control" id="tajwidSubSubRule">
+                                    <option value="" selected>Belum Dipilih</option>
                                     <!-- Options will be populated by JavaScript -->
                                 </select>
                             </div>

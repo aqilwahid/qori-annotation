@@ -9,8 +9,8 @@ function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
     const minutes = Math.floor(currentTime / 60);
     const seconds = Math.floor(currentTime % 60);
-    const milliseconds = Math.floor((currentTime % 1) * 1000);
-    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+    const milliseconds = Math.floor((currentTime % 1) * 100); // Mengambil dua digit dari milidetik
+    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
     document.getElementById('time').textContent = timeString;
 
     requestAnimationFrame(updateTimestamp);
