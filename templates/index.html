@@ -115,8 +115,35 @@
                         </div>
 
                         <!-- Time Stamp -->
-                        <div id="time">0:00.00</div>
-
+                        <div id="time-wrapper">
+                            <span id="time">0:00.00</span>
+                            <button id="saveTimeBtn" class="btn btn-secondary btn-sm" onclick="copyTime()">Coppy</button>
+                        </div>
+                        <script>
+                            function copyTime() {
+                                // Dapatkan elemen yang menampilkan waktu
+                                const timeElement = document.getElementById('time');
+                                
+                                // Buat elemen input sementara untuk menyalin teks
+                                const tempInput = document.createElement('input');
+                                tempInput.value = timeElement.textContent;
+                                document.body.appendChild(tempInput);
+                    
+                                // Pilih teks di dalam input
+                                tempInput.select();
+                                tempInput.setSelectionRange(0, 99999); // Untuk perangkat mobile
+                    
+                                // Salin teks ke clipboard
+                                document.execCommand('copy');
+                    
+                                // Hapus elemen input sementara
+                                document.body.removeChild(tempInput);
+                    
+                                // Opsional: Tampilkan pesan bahwa waktu telah disalin
+                                alert('Time copied to clipboard: ' + tempInput.value);
+                            }
+                        </script>
+                        
                         <!-- Dropdown Selection -->
                         <div class="form-group">
                             <label for="annotationType">Choose Annotation Type</label>

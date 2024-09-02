@@ -1,9 +1,11 @@
 import WaveSurfer from 'https://unpkg.com/wavesurfer.js/dist/wavesurfer.esm.js';
 import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.esm.js';
 
+
 //------------Script INTI------------
 let wavesurfer = null;
 let activeRegion = null;
+
 
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
@@ -15,6 +17,7 @@ function updateTimestamp() {
 
     requestAnimationFrame(updateTimestamp);
 }
+
 
 // Inisialisasi plugin Regions
 const regions = RegionsPlugin.create();
@@ -88,7 +91,7 @@ function uploadAudio() {
         });
 
          // Fungsi untuk mengupdate start dan end time
-         function updateStartEndTime(region) {
+        function updateStartEndTime(region) {
             document.getElementById('start-time-display').textContent = `Start: ${region.start.toFixed(3)}`;
             document.getElementById('end-time-display').textContent = `End: ${region.end.toFixed(3)}`;
 
@@ -101,7 +104,6 @@ function uploadAudio() {
                 document.getElementById('tajwidEndTime').value = region.end.toFixed(3);
             }
         }
-
 
         // Event listener untuk region update 
         wavesurfer.on('region-created', (region) => {
