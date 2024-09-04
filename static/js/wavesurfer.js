@@ -3,8 +3,7 @@ import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.
 
 
 //------------Script INTI------------
-let wavesurfer = null;
-let activeRegion = null;
+let wavesurfer
 
 
 // Fungsi untuk mengupdate waktu
@@ -131,7 +130,6 @@ async function uploadAudio() {
                 const zoomLevel = Number(this.value);
                 wavesurfer.zoom(zoomLevel);
             });
-
         });
 
         // Fungsi untuk warna region
