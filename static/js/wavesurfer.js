@@ -134,21 +134,19 @@ async function uploadAudio() {
 
         });
 
-        // Fungsi untuk menghasilkan warna acak
-        const random = (min, max) => Math.random() * (max - min) + min;
-        const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
-
+        // Fungsi untuk warna region
         wavesurfer.on('decode', () => {
             // Regions
             regions.addRegion({
-              start: 0.1,
-              end: 0.5,
-              content: 'Area Anotasi',
-              color: randomColor(),
-              minLength: 0.01,
-              maxLength: 100,
+                start: 0.1,
+                end: 0.5,
+                content: 'Area Anotasi',
+                color: 'rgba(135, 206, 235, 0.5)', // Warna biru langit
+                minLength: 0.01,
+                maxLength: 100,
             });
         });
+        
 
          // Fungsi untuk mengupdate start dan end time
         function updateStartEndTime(region) {
