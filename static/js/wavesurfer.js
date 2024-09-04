@@ -5,27 +5,9 @@ import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.
 //------------Script INTI------------
 let wavesurfer = null;
 let activeRegion = null;
-const ayahData = [
-    { text: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", audioPath: "audio_0.wav" },
-    { text: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", audioPath: "audio_1.wav" },
-    { text: "مَالِكِ يَوْمِ الدِّينِ", audioPath: "audio_2.wav" },
-    { text: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", audioPath: "audio_3.wav" },
-    { text: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", audioPath: "audio_4.wav" },
-];
 
 
-// Fungsi untuk menampilkan teks ayat berdasarkan path audio
-function displayAyahByAudioPath(audioPath) {
-    const ayah = ayahData.find(a => a.audioPath === audioPath);
-    const ayahTextElement = document.getElementById('ayah-text');
-    
-    if (ayah) {
-        ayahTextElement.innerHTML = ayah.text;
-    } else {
-        ayahTextElement.innerHTML = 'Ayat tidak ditemukan untuk audio ini.';
-    }
-}
-
+// Fungsi untuk mengupdate waktu
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
     const minutes = Math.floor(currentTime / 60);
@@ -38,10 +20,63 @@ function updateTimestamp() {
 }
 
 
+
+// Fungsi untuk memuat CSV dari server
+async function loadAyahDataFromCSV(csvPath) {
+    try {
+        const response = await fetch(csvPath);
+        const csvText = await response.text();
+        const ayahArray = csvToArray(csvText);
+        return ayahArray;
+    } catch (error) {
+        console.error("Error loading CSV:", error);
+        return [];
+    }
+}
+
+// Fungsi untuk mengonversi teks CSV menjadi array objek
+function csvToArray(str, delimiter = ",") {
+    const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
+    const rows = str.slice(str.indexOf("\n") + 1).split("\n");
+
+    const arr = rows.map(function (row) {
+        const values = row.split(delimiter);
+        if (values.length !== headers.length) {
+            return null;  // Abaikan baris yang tidak sesuai
+        }
+        const el = headers.reduce(function (object, header, index) {
+            if (values[index] !== undefined) {
+                object[header.trim()] = values[index].trim();
+            }
+            return object;
+        }, {});
+        return el;
+    }).filter(row => row !== null); // Filter baris null
+
+    return arr;
+}
+
+
+// Fungsi untuk menampilkan teks ayat berdasarkan path audio
+function displayAyahByAudioPath(audioPath, ayahData) {
+    console.log("Searching for:", audioPath);
+    const ayah = ayahData.find(a => a.local_audio_path.toLowerCase() === audioPath.toLowerCase());
+    const ayahTextElement = document.getElementById('ayah-text');
+
+    if (ayah) {
+        ayahTextElement.innerHTML = ayah.text;
+    } else {
+        console.log("Ayat tidak ditemukan untuk:", audioPath);
+        ayahTextElement.innerHTML = 'Ayat tidak ditemukan untuk audio ini.';
+    }
+}
+
+
+
 // Inisialisasi plugin Regions
 const regions = RegionsPlugin.create();
 
-function uploadAudio() {
+async function uploadAudio() {
     const fileInput = document.getElementById('audioFile');
     const file = fileInput.files[0];
 
@@ -54,8 +89,11 @@ function uploadAudio() {
 
         const url = URL.createObjectURL(file);
 
+        // Load data ayat dari CSV
+        const ayahData = await loadAyahDataFromCSV('/static/audio/audio_stats.csv');
+
         // Memanggil fungsi untuk menampilkan teks ayat berdasarkan file audio
-        displayAyahByAudioPath(file.name); // Menggunakan nama file untuk mencocokkan teks ayat
+        displayAyahByAudioPath(file.name, ayahData); // Menggunakan nama file untuk mencocokkan teks ayat
 
         // Membuat instance Wavesurfer baru dengan plugin Regions
         wavesurfer = WaveSurfer.create({
@@ -168,6 +206,7 @@ function uploadAudio() {
         alert("Please select a file to upload.");
     }
 }
+
 
 //------------Fungsi untuk download JSON------------
 function completeMakhraj() {
