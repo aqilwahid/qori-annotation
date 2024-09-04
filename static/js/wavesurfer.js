@@ -5,7 +5,26 @@ import RegionsPlugin from 'https://unpkg.com/wavesurfer.js/dist/plugins/regions.
 //------------Script INTI------------
 let wavesurfer = null;
 let activeRegion = null;
+const ayahData = [
+    { text: "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", audioPath: "audio_0.wav" },
+    { text: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", audioPath: "audio_1.wav" },
+    { text: "مَالِكِ يَوْمِ الدِّينِ", audioPath: "audio_2.wav" },
+    { text: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", audioPath: "audio_3.wav" },
+    { text: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", audioPath: "audio_4.wav" },
+];
 
+
+// Fungsi untuk menampilkan teks ayat berdasarkan path audio
+function displayAyahByAudioPath(audioPath) {
+    const ayah = ayahData.find(a => a.audioPath === audioPath);
+    const ayahTextElement = document.getElementById('ayah-text');
+    
+    if (ayah) {
+        ayahTextElement.innerHTML = ayah.text;
+    } else {
+        ayahTextElement.innerHTML = 'Ayat tidak ditemukan untuk audio ini.';
+    }
+}
 
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
@@ -34,6 +53,9 @@ function uploadAudio() {
         }
 
         const url = URL.createObjectURL(file);
+
+        // Memanggil fungsi untuk menampilkan teks ayat berdasarkan file audio
+        displayAyahByAudioPath(file.name); // Menggunakan nama file untuk mencocokkan teks ayat
 
         // Membuat instance Wavesurfer baru dengan plugin Regions
         wavesurfer = WaveSurfer.create({
