@@ -9,12 +9,17 @@ let wavesurfer
 // Fungsi untuk mengupdate waktu
 function updateTimestamp() {
     const currentTime = wavesurfer.getCurrentTime();
-    const minutes = Math.floor(currentTime / 60);
+    
+    // Hitung menit, detik, dan milidetik
+    const minutes = Math.floor((currentTime % 3600) / 60);
     const seconds = Math.floor(currentTime % 60);
-    const milliseconds = Math.floor((currentTime % 1) * 100); // Mengambil dua digit dari milidetik
-    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+    const milliseconds = Math.floor((currentTime % 1) * 100); // 2 digit milidetik
+    
+    // Format waktu menjadi 0.00.00
+    const timeString = `${minutes.toString().padStart(2, '0')}.${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
     document.getElementById('time').textContent = timeString;
 
+    // Meminta pembaruan timestamp secara terus menerus
     requestAnimationFrame(updateTimestamp);
 }
 
@@ -164,18 +169,33 @@ async function uploadAudio() {
 
          // Fungsi untuk mengupdate start dan end time
         function updateStartEndTime(region) {
-            document.getElementById('start-time-display').textContent = `Start: ${region.start.toFixed(3)}`;
-            document.getElementById('end-time-display').textContent = `End: ${region.end.toFixed(3)}`;
+            // Format waktu ke dalam format yang diinginkan 0.00.00
+            const formattedStartTime = formatTime(region.start);
+            const formattedEndTime = formatTime(region.end);
 
+            // Tampilkan waktu ke elemen di UI
+            document.getElementById('start-time-display').textContent = `Start: ${formattedStartTime}`;
+            document.getElementById('end-time-display').textContent = `End: ${formattedEndTime}`;
+
+            // Simpan waktu ke input form yang relevan berdasarkan jenis anotasi
             const annotationType = document.getElementById('annotationType').value;
             if (annotationType === 'makhraj') {
-                document.getElementById('makhrajStartTime').value = region.start.toFixed(3);
-                document.getElementById('makhrajEndTime').value = region.end.toFixed(3);
+                document.getElementById('makhrajStartTime').value = formattedStartTime;
+                document.getElementById('makhrajEndTime').value = formattedEndTime;
             } else if (annotationType === 'tajwid') {
-                document.getElementById('tajwidStartTime').value = region.start.toFixed(3);
-                document.getElementById('tajwidEndTime').value = region.end.toFixed(3);
+                document.getElementById('tajwidStartTime').value = formattedStartTime;
+                document.getElementById('tajwidEndTime').value = formattedEndTime;
             }
         }
+
+        function formatTime(timeInSeconds) {
+            const minutes = Math.floor(timeInSeconds / 60);
+            const seconds = Math.floor(timeInSeconds % 60);
+            const milliseconds = Math.floor((timeInSeconds % 1) * 100); // 2 digit milidetik
+        
+            return `${minutes.toString().padStart(2, '0')}.${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+        }
+        
 
         // Event listener untuk region update 
         wavesurfer.on('region-created', (region) => {
@@ -226,8 +246,15 @@ function completeMakhraj() {
     const rows = table.getElementsByTagName('tr');
     const annotations = [];
 
+    // Pengecekan apakah file audio sudah dipilih
+    const fileInput = document.getElementById('audioFile');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please upload an audio file first.");
+        return; // Hentikan fungsi jika file belum dipilih
+    }
+
     // Dapatkan nama file audio yang diupload
-    const audioFile = document.getElementById('audioFile').files[0].name;
+    const audioFile = fileInput.files[0].name;
     const fileName = `annotation_makhraj_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
 
     for (let i = 0; i < rows.length; i++) {
@@ -240,8 +267,8 @@ function completeMakhraj() {
                 secondary: cells[2].textContent,
                 details: cells[3].textContent
             },
-            start_time: parseFloat(cells[4].textContent),
-            end_time: parseFloat(cells[5].textContent),
+            start_time: cells[4].textContent,  // Pastikan diambil dari format yang benar
+            end_time: cells[5].textContent,    // Pastikan diambil dari format yang benar
             metadata: {
                 qori: "abdulsamad",
                 recitation_style: "Hafs",
@@ -261,8 +288,15 @@ function completeTajwid() {
     const rows = table.getElementsByTagName('tr');
     const annotations = [];
 
+     // Pengecekan apakah file audio sudah dipilih
+     const fileInput = document.getElementById('audioFile');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please upload an audio file first.");
+        return; // Hentikan fungsi jika file belum dipilih
+    }
+
     // Dapatkan nama file audio yang diupload
-    const audioFile = document.getElementById('audioFile').files[0].name;
+    const audioFile = fileInput.files[0].name;
     const fileName = `annotation_tajwid_${audioFile.split('.')[0]}.json`; // Menyimpan dengan format yang diinginkan
 
     for (let i = 0; i < rows.length; i++) {
@@ -271,8 +305,8 @@ function completeTajwid() {
             rule: cells[0].textContent,
             sub_rule: cells[1].textContent,
             sub_sub_rule: cells[2].textContent,
-            start_time: parseFloat(cells[3].textContent),
-            end_time: parseFloat(cells[4].textContent),
+            start_time: cells[3].textContent,
+            end_time: cells[4].textContent,
             context: cells[5].textContent
         };
         annotations.push(annotation);
