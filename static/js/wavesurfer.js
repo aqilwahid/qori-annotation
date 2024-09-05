@@ -19,6 +19,22 @@ function updateTimestamp() {
 }
 
 
+function changePlaybackRate() {
+    // Mendapatkan elemen Wavesurfer
+    const playbackRateElement = document.getElementById('playbackRate');
+
+    // Mendapatkan nilai kecepatan yang dipilih
+    const selectedRate = playbackRateElement.value;
+
+    // Jika Wavesurfer sudah diinisialisasi
+    if (wavesurfer) {
+        // Mengatur kecepatan pemutaran audio
+        wavesurfer.setPlaybackRate(parseFloat(selectedRate));
+    } else {
+        console.error('Wavesurfer belum diinisialisasi.');
+    }
+}
+
 
 // Fungsi untuk memuat CSV dari server
 async function loadAyahDataFromCSV(csvPath) {
@@ -572,3 +588,4 @@ window.completeMakhraj = completeMakhraj;
 window.completeTajwid = completeTajwid;
 window.saveAnnotation = saveAnnotation;
 window.deleteAnnotation = deleteAnnotation;
+window.changePlaybackRate = changePlaybackRate;
