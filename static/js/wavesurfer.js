@@ -261,19 +261,19 @@ function completeMakhraj() {
         const cells = rows[i].getElementsByTagName('td');
         const annotation = {
             audio_file: audioFile,  // Menambahkan nama file audio ke dalam JSON
-            letter: cells[0].textContent,
+            letter: cells[0].textContent || '-',
             makhraj: {
-                primary: cells[1].textContent,
-                secondary: cells[2].textContent,
-                details: cells[3].textContent
+                primary: cells[1].textContent || '-',
+                secondary: cells[2].textContent || '-',
+                details: cells[3].textContent || '-'
             },
-            start_time: cells[4].textContent,  // Pastikan diambil dari format yang benar
-            end_time: cells[5].textContent,    // Pastikan diambil dari format yang benar
+            start_time: cells[4].textContent || '-',  // Pastikan diambil dari format yang benar
+            end_time: cells[5].textContent || '-',    // Pastikan diambil dari format yang benar
             metadata: {
                 qori: "abdulsamad",
                 recitation_style: "Hafs",
-                recording_environment: cells[6].textContent,
-                recording_quality: cells[7].textContent
+                recording_environment: cells[6].textContent || '-',
+                recording_quality: cells[7].textContent || '-'
             }
         };
         annotations.push(annotation);
@@ -302,12 +302,12 @@ function completeTajwid() {
     for (let i = 0; i < rows.length; i++) {
         const cells = rows[i].getElementsByTagName('td');
         const annotation = {
-            rule: cells[0].textContent,
-            sub_rule: cells[1].textContent,
-            sub_sub_rule: cells[2].textContent,
-            start_time: cells[3].textContent,
-            end_time: cells[4].textContent,
-            context: cells[5].textContent
+            rule: cells[0].textContent || '-',
+            sub_rule: cells[1].textContent || '-',
+            sub_sub_rule: cells[2].textContent || '-',
+            start_time: cells[3].textContent || '-',
+            end_time: cells[4].textContent || '-',
+            context: cells[5].textContent || '-'
         };
         annotations.push(annotation);
     }
