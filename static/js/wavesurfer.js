@@ -334,7 +334,22 @@ const tajwidSubSubRuleSelect = document.getElementById('tajwidSubSubRule');
 const tajwidOptions = {
     "Mad": {
         "Mad Thabi'i": ["Mad Thabi'i"],
-        "Mad Far'i": ["Mad Wajib", "Mad Jaiz"]
+        "Mad Far'i": [
+            "Mad Wajib Muttashil", 
+            "Mad Jaiz Munfashil", 
+            "Mad 'Aridh Lissukun",
+            "Mad Lazim Kalimi Muthawwal",
+            "Mad Lazim Harfi Muthawwal",
+            "Mad Lin",
+            "Mad Badal",
+            "Mad Silah Qashirah",
+            "Mad Silah Tawilah",
+            "Mad 'Iwadh",
+            "Mad Lazim Kalimi Mukhaffaf",
+            "Mad Lazim Harfi Mukhaffaf",
+            "Mad Farqi",
+            "Mad Tamkin"
+        ]
     },
     "Hukum Nun Mati": {
         "Izhar": ["Izhar Halqi"],
@@ -344,7 +359,8 @@ const tajwidOptions = {
     },
     "Hukum Mim Mati": {
         "Ikhfa Syafawi": ["Ikhfa Syafawi"],
-        "Idgham Mitslain": ["Idgham Mitslain"]
+        "Idgham Mitslain": ["Idgham Mitslain"],
+        "Idzhar Syafawi": ["Idzhar Syafawi"]
     }
 };
 
@@ -408,10 +424,10 @@ function updateFieldsBasedOnLetter() {
     let details = '';
 
     switch (letter) {
-        case 'ﺍ':
+        case 'ء':
             primaryMakhraj = 'Halaq';
             secondaryMakhraj = 'Bagian dalam tenggorokan';
-            details = 'Hamzah (ﺍ), suara keluar dari bagian dalam tenggorokan.';
+            details = 'Hamzah (ء), suara keluar dari bagian dalam tenggorokan.';
             break;
         case 'ب':
             primaryMakhraj = 'Shafatan';
@@ -421,7 +437,7 @@ function updateFieldsBasedOnLetter() {
         case 'ت':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'Ta (ت), suara keluar dari ujung lidah dan ujung gigi atas.';
+            details = 'Ta (ت), suara keluar dari ujung lidah dan pangkal gigi seri atas.';
             break;
         case 'ث':
             primaryMakhraj = 'Lisan';
@@ -446,7 +462,7 @@ function updateFieldsBasedOnLetter() {
         case 'د':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'Dal (د), suara keluar dari ujung lidah dan ujung gigi atas.';
+            details = 'Dal (د), suara keluar dari ujung lidah dan pangkal gigi seri atas.';
             break;
         case 'ذ':
             primaryMakhraj = 'Lisan';
@@ -461,12 +477,12 @@ function updateFieldsBasedOnLetter() {
         case 'ز':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'Zay (ز), suara keluar dari ujung lidah dan gigi atas dengan sedikit desiran.';
+            details = 'Zay (ز), suara keluar dari ujung lidah dan gigi seri bawah dengan sedikit desiran.';
             break;
         case 'س':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'Sin (س), suara keluar dari ujung lidah dan ujung gigi seri atas.';
+            details = 'Sin (س), suara keluar dari ujung lidah dan gigi seri bawah.';
             break;
         case 'ش':
             primaryMakhraj = 'Lisan';
@@ -476,7 +492,7 @@ function updateFieldsBasedOnLetter() {
         case 'ص':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'Sad (ص), suara keluar dari ujung lidah dan ujung gigi seri atas dengan desiran.';
+            details = 'Sad (ص), suara keluar dari ujung lidah dan gigi seri bawah dengan desiran.';
             break;
         case 'ض':
             primaryMakhraj = 'Lisan';
@@ -486,7 +502,7 @@ function updateFieldsBasedOnLetter() {
         case 'ط':
             primaryMakhraj = 'Lisan';
             secondaryMakhraj = 'Ujung lidah';
-            details = 'To (ط), suara keluar dari ujung lidah dan gigi atas dengan tekanan kuat.';
+            details = 'To (ط), suara keluar dari ujung lidah dan pangkal gigi seri atas dengan tekanan kuat.';
             break;
         case 'ظ':
             primaryMakhraj = 'Lisan';
@@ -552,7 +568,7 @@ function updateFieldsBasedOnLetter() {
             primaryMakhraj = '';
             secondaryMakhraj = '';
             details = '';
-    }
+    }    
     
     document.getElementById('makhrajPrimary').value = primaryMakhraj;
     document.getElementById('makhrajSecondary').value = secondaryMakhraj;
