@@ -110,7 +110,18 @@ async function uploadAudio() {
         const url = URL.createObjectURL(file);
 
         // Load data ayat dari CSV
-        const ayahData = await loadAyahDataFromCSV('/static/audio/audio_stats.csv');
+        const qoriSelection = document.getElementById('qori-selection').value;
+        let filePath;
+
+        if (qoriSelection === "Abdulsamad") {
+        filePath = '/static/audio/audio_statistics_abdulsamad.csv';
+        } else {
+        filePath = '/static/audio/audio_statistics_ali_basfar.csv';
+        }
+
+        // Load data from the selected file
+        const ayahData = await loadAyahDataFromCSV(filePath);
+
 
         // Memanggil fungsi untuk menampilkan teks ayat berdasarkan file audio
         displayAyahByAudioPath(file.name, ayahData); // Menggunakan nama file untuk mencocokkan teks ayat
